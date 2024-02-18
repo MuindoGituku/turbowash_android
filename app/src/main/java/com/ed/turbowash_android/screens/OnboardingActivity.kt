@@ -1,4 +1,4 @@
-package com.ed.turbowash_android
+package com.ed.turbowash_android.screens
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -19,10 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.customwidgets.OnboardingScreenView
 import com.ed.turbowash_android.models.OnboardingStep

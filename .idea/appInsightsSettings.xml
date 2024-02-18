@@ -27,10 +27,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.ed.turbowash_android" />
+                  <option name="mobileSdkAppId" value="1:1073404178869:android:7e31fec6a2fcce7e7ae9fc" />
+                  <option name="projectId" value="turbowash-fe808" />
+                  <option name="projectNumber" value="1073404178869" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

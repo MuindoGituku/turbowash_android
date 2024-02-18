@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1073404178869",
+    "project_id": "turbowash-fe808",
+    "storage_bucket": "turbowash-fe808.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1073404178869:android:7e31fec6a2fcce7e7ae9fc",
+        "android_client_info": {
+          "package_name": "com.ed.turbowash_android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1073404178869-rgoa6ogigs6tp9airht0scbisna0n0hf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDIz_wp79KkdiMXaAjAlCJFXjgz2aLDvo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1073404178869-rgoa6ogigs6tp9airht0scbisna0n0hf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1073404178869-d1fptvegk4v1510rb015t42q4h7fr3rn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ed.TurboWash"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

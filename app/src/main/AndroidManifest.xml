@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,9 +15,53 @@
         android:theme="@style/Theme.TurboWash_Android"
         tools:targetApi="31">
         <activity
+            android:name=".screens.profilemanagement.InitialProfileSetupActivity"
+            android:exported="false"
+            android:label="@string/title_activity_initial_profile_setup"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
+            android:name=".screens.OnboardingActivity"
+            android:exported="false"
+            android:label="@string/title_activity_onboarding"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
+            android:name=".screens.auth.EmailSignInActivity"
+            android:exported="false"
+            android:label="@string/title_activity_email_sign_in"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
+            android:name=".screens.auth.EmailSignUpActivity"
+            android:exported="false"
+            android:label="@string/title_activity_email_sign_up"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
+            android:name=".screens.auth.MainAuthenticationActivity"
+            android:exported="false"
+            android:label="@string/title_activity_main_authentication"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
+            android:name=".screens.mainnavigation.BookingsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_bookings"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
+            android:name=".screens.mainnavigation.MainSettingsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_main_settings"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
+            android:name=".screens.mainnavigation.HomeLandingActivity"
+            android:exported="false"
+            android:label="@string/title_activity_home_landing"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
+            android:name=".screens.RootNavigationActivity"
+            android:exported="false"
+            android:label="@string/title_activity_root_navigation"
+            android:theme="@style/Theme.TurboWash_Android" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.TurboWash_Android">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

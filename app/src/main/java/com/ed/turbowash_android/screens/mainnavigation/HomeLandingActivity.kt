@@ -1,4 +1,4 @@
-package com.ed.turbowash_android.mainnavigation
+package com.ed.turbowash_android.screens.mainnavigation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

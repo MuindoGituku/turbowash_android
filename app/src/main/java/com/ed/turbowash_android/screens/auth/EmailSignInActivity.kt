@@ -1,4 +1,4 @@
-package com.ed.turbowash_android
+package com.ed.turbowash_android.screens.auth
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
