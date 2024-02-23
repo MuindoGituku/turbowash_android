@@ -20,8 +20,7 @@ fun CustomStepperIndicator(
     modifier: Modifier = Modifier,
     activeColor: Color = colorResource(id = R.color.turboBlue),
     inactiveColor: Color = colorResource(id = R.color.fadedGray),
-    circleSize: Dp = 12.dp,
-    spacing: Dp = 16.dp
+    circleSize: Dp = 12.dp
 ) {
     BoxWithConstraints(modifier = modifier) {
         val width = maxWidth - circleSize

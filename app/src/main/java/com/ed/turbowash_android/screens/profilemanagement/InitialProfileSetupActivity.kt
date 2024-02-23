@@ -110,7 +110,7 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
         return hasError
     }
 
-    var currentStep = when (currentStepView) {
+    val currentStep = when (currentStepView) {
         ProfileSetupStep.BriefingAndIntro -> 1
         ProfileSetupStep.PersonalInformation -> 2
         ProfileSetupStep.AddressDetails -> 3

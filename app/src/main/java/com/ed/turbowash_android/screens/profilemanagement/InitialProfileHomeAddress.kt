@@ -63,7 +63,7 @@ fun AddressDetailsStep(
                 fieldLabel = "City",
                 hasValidationError = cityValidationError,
                 validationErrorText = "Provide city name",
-                modifier = androidx.compose.ui.Modifier
+                modifier = Modifier
                     .width(fieldWidth)
                     .padding(start = 10.dp, end = 5.dp),
             )
@@ -72,7 +72,7 @@ fun AddressDetailsStep(
                 fieldLabel = "Province",
                 hasValidationError = provinceValidationError,
                 validationErrorText = "Provide province (or state)",
-                modifier = androidx.compose.ui.Modifier
+                modifier = Modifier
                     .width(fieldWidth)
                     .padding(start = 5.dp, end = 10.dp),
             )

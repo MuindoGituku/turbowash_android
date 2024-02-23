@@ -1,6 +1,5 @@
 package com.ed.turbowash_android.screens.profilemanagement
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
