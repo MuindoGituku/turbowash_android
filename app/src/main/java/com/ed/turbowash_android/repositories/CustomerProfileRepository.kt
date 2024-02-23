@@ -29,15 +29,26 @@ class CustomerProfileRepository {
 
         return try {
             val snapshot = db.collection("customers").document(userId).get().await()
-            snapshot.toObject(Customer::class.java) ?: throw IllegalStateException("Profile not found")
+            snapshot.toObject(Customer::class.java)
+                ?: throw IllegalStateException("Profile not found")
         } catch (e: Exception) {
             throw IllegalStateException("Failed to fetch profile: ${e.message}")
         }
     }
 
     suspend fun initialCustomerProfileUpload(
-        fullNames: String, phoneNumber: String, gender: String, dateOfBirth: Date, profileImage: Bitmap?,
-        homeAddress: String, city: String, province: String, country: String, postalCode: String, longitude: Double, latitude: Double
+        fullNames: String,
+        phoneNumber: String,
+        gender: String,
+        dateOfBirth: Date,
+        profileImage: Bitmap?,
+        homeAddress: String,
+        city: String,
+        province: String,
+        country: String,
+        postalCode: String,
+        longitude: Double,
+        latitude: Double
     ) {
         val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
 
@@ -55,16 +66,34 @@ class CustomerProfileRepository {
         }
 
         val personalData = PersonalData(
-            fullNames = fullNames, emailAddress = user.email ?: "", phoneNumber = phoneNumber, profileImage = profileImageLink, bio = "", gender = gender, dateOfBirth = Timestamp(dateOfBirth)
+            fullNames = fullNames,
+            emailAddress = user.email ?: "",
+            phoneNumber = phoneNumber,
+            profileImage = profileImageLink,
+            bio = "",
+            gender = gender,
+            dateOfBirth = Timestamp(dateOfBirth)
         )
 
         val savedAddress = SavedAddress(
-            addressTag = "Home", addressCoordinates = PlaceCoordinates(placeLongitude = longitude, placeLatitude = latitude),
-            addressComplete = homeAddress, addressCity = city, addressProvince = province, addressCountry = country, addressPostalCode = postalCode
+            addressTag = "Home",
+            addressCoordinates = PlaceCoordinates(
+                placeLongitude = longitude,
+                placeLatitude = latitude
+            ),
+            addressComplete = homeAddress,
+            addressCity = city,
+            addressProvince = province,
+            addressCountry = country,
+            addressPostalCode = postalCode
         )
 
         val customer = Customer(
-            personalData = personalData, savedPaymentCards = mutableListOf(), savedAddresses = mutableListOf(savedAddress), savedVehicles = mutableListOf(), favoriteHires = mutableListOf()
+            personalData = personalData,
+            savedPaymentCards = mutableListOf(),
+            savedAddresses = mutableListOf(savedAddress),
+            savedVehicles = mutableListOf(),
+            favoriteHires = mutableListOf()
         )
 
         db.collection("customers").document(user.uid).set(customer)
@@ -78,7 +107,13 @@ class CustomerProfileRepository {
 
 
     suspend fun updateCustomerPersonalData(
-        fullNames: String, phoneNumber: String, bio: String, gender: String, dateOfBirth: Date, initialProfileURL: String, profileImage: Bitmap?
+        fullNames: String,
+        phoneNumber: String,
+        bio: String,
+        gender: String,
+        dateOfBirth: Date,
+        initialProfileURL: String,
+        profileImage: Bitmap?
     ) {
         val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
 
