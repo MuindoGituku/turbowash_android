@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
@@ -115,15 +116,15 @@ fun SplashScreenView() {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Row (verticalAlignment = Alignment.CenterVertically){
+        Column (horizontalAlignment = Alignment.CenterHorizontally){
             CircularProgressIndicator(
                 color = colorResource(id = R.color.turboBlue),
                 strokeWidth = 5.dp,
             )
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = "Loading Resources",
-                style = MaterialTheme.typography.bodyLarge
+                text = "Welcome",
+                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black)
             )
         }
 

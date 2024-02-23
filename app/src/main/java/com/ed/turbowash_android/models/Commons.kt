@@ -1,10 +1,15 @@
 package com.ed.turbowash_android.models
 
+import com.google.firebase.Timestamp
+
 data class PersonalData(
     var fullNames:String,
     var emailAddress:String,
     var phoneNumber:String,
     var profileImage:String,
+    var bio:String,
+    var gender:String,
+    var dateOfBirth:Timestamp
 )
 
 data class SavedAddress(

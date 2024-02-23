@@ -3,10 +3,11 @@ package com.ed.turbowash_android.models
 data class ServiceProviderProfile(
     var id:String = "",
     var personalData:PersonalData,
-    var bio:String,
     var bankingInfo:PaymentData?,
     var homeAddress:SavedAddress,
-    var prefferedRegion: MapRegion?
+    var prefferedRegion: MapRegion?,
+    var servicesOffered:MutableList<String>,
+    var itemsInPossesion:MutableList<String>,
 )
 
 data class PaymentData(

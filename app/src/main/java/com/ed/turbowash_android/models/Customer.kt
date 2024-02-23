@@ -5,7 +5,6 @@ import java.util.Date
 data class Customer(
     var id:String = "",
     var personalData: PersonalData,
-    var bio: String,
     var savedPaymentCards: MutableList<PaymentCard>,
     var savedAddresses: MutableList<SavedAddress>,
     var savedVehicles: MutableList<SavedVehicle>,

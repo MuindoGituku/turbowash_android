@@ -44,12 +44,6 @@ class MainViewModel(private val preferencesRepository: PreferencesRepository) : 
         }
     }
 
-    private fun checkOnboardingComplete(context: Context): Boolean {
-        val sharedPreferences = context.getSharedPreferences("TurboWash", Context.MODE_PRIVATE)
-        return sharedPreferences.getBoolean("OnboardingComplete", false)
-    }
-
-
     private fun checkIfUserIsAuthenticated(): Boolean {
         val currentUser = FirebaseAuth.getInstance().currentUser
         return currentUser != null
