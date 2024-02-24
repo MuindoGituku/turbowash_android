@@ -1,6 +1,12 @@
 package com.ed.turbowash_android.repositories
 
 import android.content.Context
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 class PreferencesRepository(private val context: Context) {
 
@@ -15,5 +21,16 @@ class PreferencesRepository(private val context: Context) {
             putBoolean("OnboardingComplete", true)
             apply()
         }
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object AppModule {
+
+    @Singleton
+    @Provides
+    fun providePreferencesRepository(@ApplicationContext context: Context): PreferencesRepository {
+        return PreferencesRepository(context)
     }
 }

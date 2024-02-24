@@ -1,14 +1,5 @@
 <resources>
     <string name="app_name">TurboWash_Android</string>
-    <string name="title_activity_root_navigation">RootNavigationActivity</string>
-    <string name="title_activity_home_landing">HomeLandingActivity</string>
-    <string name="title_activity_main_settings">MainSettingsActivity</string>
-    <string name="title_activity_bookings">BookingsActivity</string>
-    <string name="title_activity_main_authentication">MainAuthenticationActivity</string>
-    <string name="title_activity_email_sign_up">EmailSignUpActivity</string>
-    <string name="title_activity_email_sign_in">EmailSignInActivity</string>
-    <string name="title_activity_onboarding">OnboardingActivity</string>
-    <string name="title_activity_initial_profile_setup">InitialProfileSetupActivity</string>
     <string name="web_client_id">1073404178869-rgoa6ogigs6tp9airht0scbisna0n0hf.apps.googleusercontent.com</string>
     <string name="maps_api_key">AIzaSyCDIz_wp79KkdiMXaAjAlCJFXjgz2aLDvo</string>
     <string name="privacy_policy">

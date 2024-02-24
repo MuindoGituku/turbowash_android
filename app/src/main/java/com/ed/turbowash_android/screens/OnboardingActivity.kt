@@ -1,8 +1,5 @@
 package com.ed.turbowash_android.screens
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,8 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -24,27 +19,13 @@ import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.customwidgets.OnboardingScreenView
 import com.ed.turbowash_android.models.OnboardingStep
 import com.ed.turbowash_android.repositories.PreferencesRepository
-import com.ed.turbowash_android.ui.theme.TurboWash_AndroidTheme
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.launch
 
-class OnboardingActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            TurboWash_AndroidTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {}
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WelcomeWalkThrough(preferencesRepository: PreferencesRepository, onOnboardingComplete: () -> Unit) {
+fun WelcomeWalkThrough(onOnboardingComplete: () -> Unit) {
     val pages = remember { OnboardingStep.samplePages }
     val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = 0){ pages.size }
     val coroutineScope = rememberCoroutineScope()
@@ -78,7 +59,6 @@ fun WelcomeWalkThrough(preferencesRepository: PreferencesRepository, onOnboardin
                         MaxWidthButton(
                             buttonText = "Get Started",
                             buttonAction = {
-                                preferencesRepository.setOnboardingComplete()
                                 onOnboardingComplete()
                             },
                             customTextColor = Color.White,

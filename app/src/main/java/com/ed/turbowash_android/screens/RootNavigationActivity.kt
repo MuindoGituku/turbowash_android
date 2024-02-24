@@ -1,16 +1,10 @@
 package com.ed.turbowash_android.screens
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,23 +19,6 @@ import androidx.navigation.compose.rememberNavController
 import com.ed.turbowash_android.ui.theme.TurboWash_AndroidTheme
 import com.ed.turbowash_android.models.screensList
 import com.ed.turbowash_android.models.Screen
-
-class RootNavigationActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            TurboWash_AndroidTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    RootHomeNavigation()
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun RootHomeNavigation() {

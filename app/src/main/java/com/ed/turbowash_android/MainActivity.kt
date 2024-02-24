@@ -1,8 +1,11 @@
 package com.ed.turbowash_android
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,8 +44,11 @@ import com.ed.turbowash_android.vewmodelfactories.UserAuthenticationViewModelFac
 import com.ed.turbowash_android.viewmodels.MainViewModel
 import com.ed.turbowash_android.viewmodels.UserAuthenticationViewModel
 import com.google.android.libraries.places.api.Places
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -52,14 +58,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            val preferencesRepository = PreferencesRepository(applicationContext)
-            val viewModelFactory = MainViewModelFactory(preferencesRepository)
-            val viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
-            val userAuthViewModel = ViewModelProvider(this, UserAuthenticationViewModelFactory(application)).get(
-                UserAuthenticationViewModel::class.java)
+            val mainViewModel: MainViewModel by viewModels()
+            val userAuthViewModel: UserAuthenticationViewModel by viewModels()
 
             val navController = rememberNavController()
-            val navigationRoute by viewModel.navigationRoute.observeAsState()
+            val navigationRoute by mainViewModel.navigationRoute.observeAsState()
 
             TurboWash_AndroidTheme {
                 Surface(
@@ -72,17 +75,17 @@ class MainActivity : ComponentActivity() {
                         NavHost(navController = navController, startDestination = navigationRoute ?: "splash") {
                             composable("splash") { SplashScreenView() }
                             composable("onboarding") {
-                                WelcomeWalkThrough(preferencesRepository = preferencesRepository) {
-                                    viewModel.onOnboardingComplete()
+                                WelcomeWalkThrough() {
+                                    mainViewModel.onOnboardingComplete()
                                 }
                             }
                             composable("auth") {
                                 AuthActivityScreenView(userAuthViewModel, onAuthCompletedSuccessfully = {
-                                    viewModel.onAuthCompletedSuccessfully()
+                                    mainViewModel.onAuthCompletedSuccessfully()
                                 })
                             }
                             composable("profile") { ProfileSetupScreen {
-                                viewModel.onProfileCreatedSuccessfully()
+                                mainViewModel.onProfileCreatedSuccessfully()
                             } }
                             composable("home") { RootHomeNavigation() }
                         }

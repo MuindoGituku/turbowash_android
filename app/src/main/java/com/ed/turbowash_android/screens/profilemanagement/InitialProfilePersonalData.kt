@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.ed.turbowash_android.R
+import com.ed.turbowash_android.customwidgets.CustomIconClickableField
 import com.ed.turbowash_android.customwidgets.CustomIconTextField
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import kotlinx.coroutines.launch
@@ -54,12 +55,19 @@ import kotlinx.coroutines.launch
 @Composable
 fun PersonalInformationStep(
     onContinueClicked: () -> Unit,
+    onBackClicked: () -> Unit,
     imageBitmap:MutableState<Bitmap?>,
     fullNames:MutableState<String>,
     fullNamesValidationError:MutableState<Boolean>,
     emailAddress:MutableState<String>,
     phoneNumber:MutableState<String>,
     phoneNumberValidationError:MutableState<Boolean>,
+    gender:MutableState<String>,
+    genderValidationError:MutableState<Boolean>,
+    dateOfBirth:MutableState<String>,
+    dateOfBirthValidationError:MutableState<Boolean>,
+    onClickGenderField: () -> Unit,
+    onClickDateField: () -> Unit,
     ) {
 
     val modalBottomSheetState = androidx.compose.material.rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
@@ -209,7 +217,7 @@ fun PersonalInformationStep(
                 validationErrorText = "Please provide your full names in order to proceed",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
+                    .padding(10.dp),
             )
             CustomIconTextField(
                 fieldValue = emailAddress,
@@ -232,15 +240,46 @@ fun PersonalInformationStep(
                 validationErrorText = "Your phone number should be 10 digits, without any spaces, special characters or country codes",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
+                    .padding(10.dp),
             )
-            MaxWidthButton(
-                buttonText = "Save and Add Address",
-                buttonAction = {
-                    onContinueClicked()
-                },
-                customTextColor = Color.White,
+            CustomIconClickableField(
+                fieldLabel = "Gender",
+                fieldValue = gender,
+                hasValidationError = genderValidationError,
+                validationErrorText = "Please select a gender you identify with in order to proceed.",
+                onClick = { onClickGenderField() },
+                fieldIcon = R.drawable.gender_filled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
             )
+            CustomIconClickableField(
+                fieldLabel = "Date Of Birth",
+                fieldValue = dateOfBirth,
+                hasValidationError = dateOfBirthValidationError,
+                validationErrorText = "This app is limited to users above the age of 18 years.",
+                onClick = { onClickDateField() },
+                fieldIcon = R.drawable.calendar_filled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+            )
+            Row (horizontalArrangement = Arrangement.SpaceBetween) {
+                MaxWidthButton(
+                    buttonText = "Save and Add Address",
+                    buttonAction = {
+                        onBackClicked()
+                    },
+                    customTextColor = Color.White,
+                )
+                MaxWidthButton(
+                    buttonText = "Save and Add Address",
+                    buttonAction = {
+                        onContinueClicked()
+                    },
+                    customTextColor = Color.White,
+                )
+            }
         }
     }
 }

@@ -7,8 +7,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class UserAuthenticationViewModel(private val application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class UserAuthenticationViewModel @Inject constructor(private val application: Application) : AndroidViewModel(application) {
     private val _authenticationState = MutableLiveData<Boolean>()
     val authenticationState: LiveData<Boolean> = _authenticationState
 

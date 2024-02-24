@@ -1,7 +1,16 @@
 package com.ed.turbowash_android.repositories
 
 import android.graphics.Bitmap
-import android.util.Log
+import com.ed.turbowash_android.exceptions.AuthenticationException
+import com.ed.turbowash_android.exceptions.DataIntegrityException
+import com.ed.turbowash_android.exceptions.InvalidDataException
+import com.ed.turbowash_android.exceptions.NetworkException
+import com.ed.turbowash_android.exceptions.OperationFailedException
+import com.ed.turbowash_android.exceptions.PermissionDeniedException
+import com.ed.turbowash_android.exceptions.QuotaExceededException
+import com.ed.turbowash_android.exceptions.ResourceNotFoundException
+import com.ed.turbowash_android.exceptions.StorageException
+import com.ed.turbowash_android.exceptions.TimeoutException
 import com.ed.turbowash_android.models.Customer
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.PersonalData
@@ -9,11 +18,20 @@ import com.ed.turbowash_android.models.PlaceCoordinates
 import com.ed.turbowash_android.models.SavedAddress
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.tasks.await
+import java.io.IOException
 import java.util.Date
+import javax.inject.Singleton
 
-class CustomerProfileRepository {
+class CustomerProfileRepository (private val generalDatabaseActionsRepo: GeneralDatabaseActionsRepo) {
     private val db: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance()
     }
@@ -22,57 +40,60 @@ class CustomerProfileRepository {
         FirebaseAuth.getInstance()
     }
 
-    private val generalDatabaseActionsRepo = GeneralDatabaseActionsRepo()
+    private fun getCurrentUser(): FirebaseUser = auth.currentUser ?: throw IllegalStateException("Not logged in")
 
-    suspend fun getCustomerProfile(): Customer {
-        val userId = auth.currentUser?.uid ?: throw IllegalStateException("Not logged in")
-
+    private suspend fun <T> executeWithExceptionHandling(block: suspend () -> T): T {
         return try {
-            val snapshot = db.collection("customers").document(userId).get().await()
-            snapshot.toObject(Customer::class.java)
-                ?: throw IllegalStateException("Profile not found")
+            block()
+        } catch (e: FirebaseFirestoreException) {
+            throw DataIntegrityException("Firestore operation failed: ${e.message}")
+        } catch (e: FirebaseAuthException) {
+            throw AuthenticationException("Auth operation failed: ${e.message}")
+        } catch (e: IOException) {
+            throw NetworkException("Network error. Please check your internet connection.")
+        } catch (e: StorageException) {
+            throw StorageException("Storage error occurred. Please try again later.")
+        } catch (e: PermissionDeniedException) {
+            throw PermissionDeniedException("Permission denied. Please ensure the app has the necessary permissions.")
+        } catch (e: ResourceNotFoundException) {
+            throw ResourceNotFoundException("Requested resource not found.")
+        } catch (e: QuotaExceededException) {
+            throw QuotaExceededException("Quota exceeded. Please try again later.")
+        } catch (e: InvalidDataException) {
+            throw InvalidDataException("Invalid data provided.")
+        } catch (e: TimeoutException) {
+            throw TimeoutException("Request timed out. Please try again.")
         } catch (e: Exception) {
-            throw IllegalStateException("Failed to fetch profile: ${e.message}")
+            throw OperationFailedException("Operation failed: ${e.localizedMessage}. Please try again later.")
         }
     }
 
+    suspend fun getCustomerProfile(): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
+        val snapshot = db.collection("customers").document(user.uid).get().await()
+        snapshot.toObject(Customer::class.java)?.apply {
+            id = snapshot.id
+        } ?: throw DataIntegrityException("Profile not found")
+    }
+
     suspend fun initialCustomerProfileUpload(
-        fullNames: String,
-        phoneNumber: String,
-        gender: String,
-        dateOfBirth: Date,
-        profileImage: Bitmap?,
-        homeAddress: String,
-        city: String,
-        province: String,
-        country: String,
-        postalCode: String,
-        longitude: Double,
-        latitude: Double
-    ) {
-        val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
+        fullNames: String, phoneNumber: String, gender: String, dateOfBirth: Date, profileImage: Bitmap?,
+        homeAddress: String, city: String, province: String, country: String, postalCode: String, longitude: Double, latitude: Double
+    ): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
 
         var profileImageLink = ""
 
         if (profileImage != null) {
-            try {
-                profileImageLink = generalDatabaseActionsRepo.uploadImageToFirebaseStorageAwait(
-                    pathString = "profiles/customers/${user.uid}.jpg",
-                    bitmap = profileImage
-                )
-            } catch (e: Exception) {
-                throw IllegalStateException("Failed to upload profile image: ${e.message}")
-            }
+            profileImageLink = generalDatabaseActionsRepo.uploadImageToFirebaseStorageAwait(
+                pathString = "profiles/customers/${user.uid}.jpg",
+                bitmap = profileImage
+            )
         }
 
         val personalData = PersonalData(
-            fullNames = fullNames,
-            emailAddress = user.email ?: "",
-            phoneNumber = phoneNumber,
-            profileImage = profileImageLink,
-            bio = "",
-            gender = gender,
-            dateOfBirth = Timestamp(dateOfBirth)
+            fullNames = fullNames, emailAddress = user.email ?: "", phoneNumber = phoneNumber, profileImage = profileImageLink, bio = "",
+            gender = gender, dateOfBirth = Timestamp(dateOfBirth)
         )
 
         val savedAddress = SavedAddress(
@@ -81,189 +102,156 @@ class CustomerProfileRepository {
                 placeLongitude = longitude,
                 placeLatitude = latitude
             ),
-            addressComplete = homeAddress,
-            addressCity = city,
-            addressProvince = province,
-            addressCountry = country,
-            addressPostalCode = postalCode
+            addressComplete = homeAddress, addressCity = city, addressProvince = province, addressCountry = country, addressPostalCode = postalCode
         )
 
-        val customer = Customer(
-            personalData = personalData,
-            savedPaymentCards = mutableListOf(),
-            savedAddresses = mutableListOf(savedAddress),
-            savedVehicles = mutableListOf(),
-            favoriteHires = mutableListOf()
-        )
+        val customer = Customer(personalData = personalData, savedPaymentCards = mutableListOf(), savedAddresses = mutableListOf(savedAddress), savedVehicles = mutableListOf(), favoriteHires = mutableListOf())
 
-        db.collection("customers").document(user.uid).set(customer)
-            .addOnSuccessListener {
-                Log.d("UploadSuccess", "Customer profile successfully uploaded")
-            }
-            .addOnFailureListener { e ->
-                throw IllegalStateException("Failed to upload customer profile: ${e.message}")
-            }
+        db.collection("customers").document(user.uid).set(customer).await()
+
+        customer
     }
 
 
     suspend fun updateCustomerPersonalData(
-        fullNames: String,
-        phoneNumber: String,
-        bio: String,
-        gender: String,
-        dateOfBirth: Date,
-        initialProfileURL: String,
-        profileImage: Bitmap?
-    ) {
-        val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
+        fullNames: String, phoneNumber: String, bio: String, gender: String, dateOfBirth: Date, initialProfileURL: String, profileImage: Bitmap?
+    ): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
 
         var profileImageLink = initialProfileURL
 
         if (profileImage != null) {
-            try {
-                profileImageLink = generalDatabaseActionsRepo.uploadImageToFirebaseStorageAwait(
-                    pathString = "profiles/customers/${user.uid}.jpg",
-                    bitmap = profileImage
-                )
-            } catch (e: Exception) {
-                throw IllegalStateException("Failed to upload profile image: ${e.message}")
-            }
+            profileImageLink = generalDatabaseActionsRepo.uploadImageToFirebaseStorageAwait(
+                pathString = "profiles/customers/${user.uid}.jpg",
+                bitmap = profileImage
+            )
         }
 
         val updatedPersonalData = mapOf(
-            "personalData.fullNames" to fullNames,
-            "personalData.emailAddress" to user.email,
-            "personalData.phoneNumber" to phoneNumber,
-            "personalData.bio" to bio,
-            "personalData.gender" to gender,
-            "personalData.dateOfBirth" to Timestamp(dateOfBirth),
-            "personalData.profileImage" to profileImageLink
+            "personal_data.full_names" to fullNames,
+            "personal_data.email_address" to (user.email ?: ""),
+            "personal_data.phone_number" to phoneNumber,
+            "personal_data.bio" to bio,
+            "personal_data.gender" to gender,
+            "personal_data.date_of_birth" to Timestamp(dateOfBirth),
+            "personal_data.profile_image" to profileImageLink
         )
 
-        try {
-            db.collection("customers").document(user.uid).update(updatedPersonalData).await()
-        } catch (e: Exception) {
-            throw IllegalStateException("Failed to update customer data: ${e.message}")
-        }
+        db.collection("customers").document(user.uid).update(updatedPersonalData).await()
+        getCustomerProfile()
     }
 
-    suspend fun updateCustomerAddress(existingAddressTag: String, newAddressDetails: SavedAddress) {
-        val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
+
+    suspend fun updateCustomerAddress(existingAddressTag: String, newAddressDetails: SavedAddress): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
 
         val customerDocRef = db.collection("customers").document(user.uid)
 
-        try {
-            db.runTransaction { transaction ->
-                val snapshot = transaction.get(customerDocRef)
-                val customer = snapshot.toObject(Customer::class.java)
+        db.runTransaction { transaction ->
+            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                ?: throw IllegalStateException("Customer not found")
 
-                customer?.savedAddresses?.let { addresses ->
-                    val index = addresses.indexOfFirst { it.addressTag == existingAddressTag }
-                    if (index != -1) {
-                        addresses[index] = newAddressDetails
-                        transaction.update(customerDocRef, "savedAddresses", addresses)
-                    }
-                }
-            }.await()
-        } catch (e: Exception) {
-            throw IllegalStateException("Failed to update address: ${e.message}")
-        }
+            customer.savedAddresses.indexOfFirst { it.addressTag == existingAddressTag }.takeIf { it != -1 }
+                ?.let { index ->
+                customer.savedAddresses[index] = newAddressDetails
+                transaction.update(customerDocRef, "saved_addresses", customer.savedAddresses)
+            } ?: throw IllegalStateException("Address not found")
+        }.await()
+        getCustomerProfile()
     }
 
-    suspend fun addCustomerAddress(newAddress: SavedAddress) {
-        val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
+    suspend fun addCustomerAddress(newAddress: SavedAddress): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
 
         val customerDocRef = db.collection("customers").document(user.uid)
 
-        try {
-            db.runTransaction { transaction ->
-                val snapshot = transaction.get(customerDocRef)
-                val customer = snapshot.toObject(Customer::class.java)
+        db.runTransaction { transaction ->
+            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                ?: throw IllegalStateException("Customer not found")
 
-                customer?.savedAddresses?.add(newAddress)
-                transaction.update(customerDocRef, "savedAddresses", customer?.savedAddresses)
-            }.await()
-        } catch (e: Exception) {
-            throw IllegalStateException("Failed to add address: ${e.message}")
-        }
+            customer.savedAddresses.add(newAddress)
+            transaction.update(customerDocRef, "saved_addresses", customer.savedAddresses)
+        }.await()
+        getCustomerProfile()
     }
 
-    suspend fun deleteCustomerAddress(selectedAddressTag: String) {
-        val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
+    suspend fun deleteCustomerAddress(selectedAddressTag: String): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
 
         val customerDocRef = db.collection("customers").document(user.uid)
 
-        try {
-            db.runTransaction { transaction ->
-                val snapshot = transaction.get(customerDocRef)
-                val customer = snapshot.toObject(Customer::class.java)
+        db.runTransaction { transaction ->
+            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                ?: throw IllegalStateException("Customer not found")
 
-                customer?.savedAddresses?.let { addresses ->
-                    addresses.removeAll { it.addressTag == selectedAddressTag }
-                    transaction.update(customerDocRef, "savedAddresses", addresses)
-                }
-            }.await()
-        } catch (e: Exception) {
-            throw IllegalStateException("Failed to delete address: ${e.message}")
-        }
+            customer.savedAddresses.removeIf { it.addressTag == selectedAddressTag }
+            transaction.update(customerDocRef, "saved_addresses", customer.savedAddresses)
+        }.await()
+        getCustomerProfile()
     }
 
-    suspend fun updateCustomerPaymentCard(existingCardTag: String, newCardDetails: PaymentCard) {
-        val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
+    suspend fun updateCustomerPaymentCard(existingCardTag: String, newCardDetails: PaymentCard): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
 
         val customerDocRef = db.collection("customers").document(user.uid)
 
-        try {
-            db.runTransaction { transaction ->
-                val snapshot = transaction.get(customerDocRef)
-                val customer = snapshot.toObject(Customer::class.java)
-                customer?.savedPaymentCards?.let { cards ->
-                    val index = cards.indexOfFirst { it.cardTag == existingCardTag }
-                    if (index != -1) {
-                        cards[index] = newCardDetails
-                        transaction.update(customerDocRef, "savedPaymentCards", cards)
-                    }
-                }
-            }.await()
-        } catch (e: Exception) {
-            throw IllegalStateException("Failed to update payment card: ${e.message}")
-        }
+        db.runTransaction { transaction ->
+            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                ?: throw IllegalStateException("Customer not found")
+
+            customer.savedPaymentCards.indexOfFirst { it.cardTag == existingCardTag }.takeIf { it != -1 }
+                ?.let { index ->
+                customer.savedPaymentCards[index] = newCardDetails
+                transaction.update(customerDocRef, "saved_payment_cards", customer.savedPaymentCards)
+            } ?: throw IllegalStateException("Payment card not found")
+        }.await()
+        getCustomerProfile()
     }
 
-    suspend fun addCustomerPaymentCard(newCard: PaymentCard) {
-        val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
+    suspend fun addCustomerPaymentCard(newCard: PaymentCard): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
 
         val customerDocRef = db.collection("customers").document(user.uid)
 
-        try {
-            db.runTransaction { transaction ->
-                val snapshot = transaction.get(customerDocRef)
-                val customer = snapshot.toObject(Customer::class.java)
+        db.runTransaction { transaction ->
+            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                ?: throw IllegalStateException("Customer not found")
 
-                customer?.savedPaymentCards?.add(newCard)
-                transaction.update(customerDocRef, "savedPaymentCards", customer?.savedPaymentCards)
-            }.await()
-        } catch (e: Exception) {
-            throw IllegalStateException("Failed to add payment card: ${e.message}")
-        }
+            customer.savedPaymentCards.apply {
+                add(newCard)
+                transaction.update(customerDocRef, "saved_payment_cards", this)
+            }
+        }.await()
+        getCustomerProfile()
     }
 
-    suspend fun deleteCustomerPaymentCard(selectedCardTag: String) {
-        val user = auth.currentUser ?: throw IllegalStateException("Not logged in")
+    suspend fun deleteCustomerPaymentCard(selectedCardTag: String): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
 
         val customerDocRef = db.collection("customers").document(user.uid)
 
-        try {
-            db.runTransaction { transaction ->
-                val snapshot = transaction.get(customerDocRef)
-                val customer = snapshot.toObject(Customer::class.java)
-                customer?.savedPaymentCards?.let { cards ->
-                    cards.removeAll { it.cardTag == selectedCardTag }
-                    transaction.update(customerDocRef, "savedPaymentCards", cards)
-                }
-            }.await()
-        } catch (e: Exception) {
-            throw IllegalStateException("Failed to delete payment card: ${e.message}")
-        }
+        db.runTransaction { transaction ->
+            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                ?: throw IllegalStateException("Customer not found")
+
+            customer.savedPaymentCards.removeIf { it.cardTag == selectedCardTag }
+            transaction.update(customerDocRef, "saved_payment_cards", customer.savedPaymentCards)
+        }.await()
+        getCustomerProfile()
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object RepositoryModule {
+
+    @Provides
+    @Singleton
+    fun provideGeneralDatabaseActionsRepo(): GeneralDatabaseActionsRepo = GeneralDatabaseActionsRepo()
+
+    @Provides
+    @Singleton
+    fun provideCustomerProfileRepository(
+        generalDatabaseActionsRepo: GeneralDatabaseActionsRepo
+    ): CustomerProfileRepository = CustomerProfileRepository(generalDatabaseActionsRepo)
 }

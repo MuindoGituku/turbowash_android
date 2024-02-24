@@ -1,20 +1,17 @@
 package com.ed.turbowash_android.screens.profilemanagement
 
 import android.graphics.Bitmap
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,32 +22,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
 import com.ed.turbowash_android.customwidgets.CustomStepperIndicator
-import com.ed.turbowash_android.ui.theme.TurboWash_AndroidTheme
+import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
+import java.time.LocalDate
+import java.time.Period
+import java.time.ZoneId
+import java.util.Date
 
-class InitialProfileSetupActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            TurboWash_AndroidTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    ProfileSetupScreen { }
-                }
-            }
-        }
-    }
-}
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
+    val customerProfileViewModel: CustomerProfileViewModel = hiltViewModel()
+
     var currentStepView by remember { mutableStateOf(ProfileSetupStep.BriefingAndIntro) }
 
     var showAlert by remember { mutableStateOf(false) }
@@ -64,6 +53,11 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
     val uid by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser!!.uid) }
     val phoneNumber = remember { mutableStateOf("") }
     val phoneNumberValidationError = remember { mutableStateOf(false) }
+    val gender = remember { mutableStateOf("") }
+    val genderValidationError = remember { mutableStateOf(false) }
+    val dateOfBirthText = remember { mutableStateOf("") }
+    val selectedDateOfBirth = remember { mutableStateOf(LocalDate.now()) }
+    val dateOfBirthValidationError = remember { mutableStateOf(false) }
 
     val homeAddress = remember { mutableStateOf("") }
     val homeAddressValidationError = remember { mutableStateOf(false) }
@@ -78,36 +72,59 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
     val countryValidationError = remember { mutableStateOf(false) }
     val postalCode = remember { mutableStateOf("") }
 
-    fun validatePersonal(): Boolean {
+    fun isLessThanEighteenYearsFromNow(year: Int, month: Int, dayOfMonth: Int): Boolean {
+        val birthDate = LocalDate.of(year, month, dayOfMonth)
+        val currentDate = LocalDate.now()
+        val age = Period.between(birthDate, currentDate).years
+        return age < 18
+    }
+
+    fun validate(): Boolean {
         var hasError = false
 
         fullNamesValidationError.value = fullNames.value.isBlank()
-        phoneNumberValidationError.value = !phoneNumber.value.matches("^[0-9]{10}$".toRegex()) || phoneNumber.value.isBlank()
+        phoneNumberValidationError.value =
+            !phoneNumber.value.matches("^[0-9]{10}$".toRegex()) || phoneNumber.value.isBlank()
+        genderValidationError.value = gender.value.isBlank()
+        dateOfBirthValidationError.value = isLessThanEighteenYearsFromNow(
+            selectedDateOfBirth.value.year,
+            selectedDateOfBirth.value.monthValue,
+            selectedDateOfBirth.value.dayOfMonth,
+        )
+        homeAddressValidationError.value = homeAddress.value.isBlank()
+        cityValidationError.value = city.value.isBlank()
+        provinceValidationError.value = province.value.isBlank()
+        countryValidationError.value = country.value.isBlank()
 
-        if (fullNamesValidationError.value || phoneNumberValidationError.value) {
+        if (
+            fullNamesValidationError.value || phoneNumberValidationError.value || genderValidationError.value || dateOfBirthValidationError.value ||
+            homeAddressValidationError.value || cityValidationError.value || provinceValidationError.value || countryValidationError.value
+            ) {
             hasError = true
         }
 
         return hasError
     }
 
-    fun validateAddress(): Boolean {
-        var hasError = false
+    fun onProfileCompletedSuccessfully() {
+        val dateOfBirth = Date.from(selectedDateOfBirth.value.atStartOfDay(ZoneId.systemDefault()).toInstant())
 
-        homeAddressValidationError.value = homeAddress.value.isBlank()
-        cityValidationError.value = city.value.isBlank()
-        provinceValidationError.value = province.value.isBlank()
-        countryValidationError.value = country.value.isBlank()
+        customerProfileViewModel.initialProfileUpload(
+            fullNames = fullNames.value,
+            phoneNumber = phoneNumber.value,
+            gender = gender.value,
+            dateOfBirth = dateOfBirth,
+            profileImage = imageBitmap.value,
+            homeAddress = homeAddress.value,
+            city = city.value,
+            province = province.value,
+            country = country.value,
+            postalCode = postalCode.value,
+            longitude = longitude,
+            latitude = latitude
+        )
 
-        if (homeAddressValidationError.value ||
-            cityValidationError.value ||
-            provinceValidationError.value ||
-            countryValidationError.value
-        ) {
-            hasError = true
-        }
-
-        return hasError
+        onProfileCreatedSuccessfully()
     }
 
     val currentStep = when (currentStepView) {
@@ -115,7 +132,7 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
         ProfileSetupStep.PersonalInformation -> 2
         ProfileSetupStep.AddressDetails -> 3
     }
-    val totalSteps = 3 // Define the total number of steps in the process
+    val totalSteps = 3
 
     Scaffold(
         topBar = {
@@ -147,11 +164,10 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
 
                 ProfileSetupStep.PersonalInformation -> PersonalInformationStep(
                     onContinueClicked = {
-                        if (!validatePersonal()) {
-                            showAlert = true
-                        } else {
-                            currentStepView = ProfileSetupStep.AddressDetails
-                        }
+                        currentStepView = ProfileSetupStep.AddressDetails
+                    },
+                    onBackClicked = {
+                        currentStepView = ProfileSetupStep.BriefingAndIntro
                     },
                     fullNames = fullNames,
                     fullNamesValidationError = fullNamesValidationError,
@@ -159,14 +175,20 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
                     phoneNumber = phoneNumber,
                     phoneNumberValidationError = phoneNumberValidationError,
                     imageBitmap = imageBitmap,
+                    gender = gender,
+                    genderValidationError = genderValidationError,
+                    dateOfBirth = dateOfBirthText,
+                    dateOfBirthValidationError = dateOfBirthValidationError,
+                    onClickDateField = { },
+                    onClickGenderField = { },
                 )
 
                 ProfileSetupStep.AddressDetails -> AddressDetailsStep(
                     onProfileCompleted = {
-                        if (!validateAddress()) {
-                            showAlert = true
+                        if (!validate()) {
+                            onProfileCompletedSuccessfully()
                         } else {
-                            onProfileCreatedSuccessfully()
+                            currentStepView = ProfileSetupStep.PersonalInformation
                         }
                     },
                     homeAddress = homeAddress,
@@ -182,43 +204,6 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
             }
         }
     }
-
-
-//    uploadSuccess?.let { success ->
-//        if (success) {
-//            AlertDialog(
-//                onDismissRequest = {
-//                    viewModel.resetUploadSuccess()
-//                    navigateToHome()
-//                },
-//                title = { Text("Success") },
-//                text = { Text("Profile uploaded successfully.") },
-//                confirmButton = {
-//                    Button(onClick = {
-//                        viewModel.resetUploadSuccess()
-//                        navigateToHome()
-//                    }) {
-//                        Text("OK")
-//                    }
-//                }
-//            )
-//        } else {
-//            AlertDialog(
-//                onDismissRequest = {
-//                    viewModel.resetUploadSuccess()
-//                },
-//                title = { Text("Error") },
-//                text = { Text("Profile uploading failed. Confirm details and try again!!") },
-//                confirmButton = {
-//                    Button(onClick = {
-//                        viewModel.resetUploadSuccess()
-//                    }) {
-//                        Text("Try Again")
-//                    }
-//                }
-//            )
-//        }
-//    }
 }
 
 enum class ProfileSetupStep {
@@ -249,13 +234,5 @@ fun BottomSheetContent(onCameraClick: () -> Unit, onGalleryClick: () -> Unit) {
                 Text("Browse Gallery")
             }
         }
-    }
-}
-
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun ProfileSetupScreenPreview() {
-    TurboWash_AndroidTheme {
-        ProfileSetupScreen { }
     }
 }

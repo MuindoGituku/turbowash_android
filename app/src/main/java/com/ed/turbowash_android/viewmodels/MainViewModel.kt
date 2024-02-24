@@ -7,10 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.ed.turbowash_android.repositories.PreferencesRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class MainViewModel(private val preferencesRepository: PreferencesRepository) : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(private val preferencesRepository: PreferencesRepository) : ViewModel() {
     private val _navigationRoute = MutableLiveData<String>()
     val navigationRoute: LiveData<String> = _navigationRoute
 
