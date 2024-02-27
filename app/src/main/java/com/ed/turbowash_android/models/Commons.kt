@@ -14,21 +14,29 @@ data class PersonalData(
 )
 
 data class SavedAddress(
-    @get:PropertyName("address_tag") @set:PropertyName("address_tag") var addressTag: String,
-    @get:PropertyName("address_coordinates") @set:PropertyName("address_coordinates") var addressCoordinates: PlaceCoordinates,
-    @get:PropertyName("address_complete") @set:PropertyName("address_complete") var addressComplete: String,
-    @get:PropertyName("address_city") @set:PropertyName("address_city") var addressCity: String,
-    @get:PropertyName("address_province") @set:PropertyName("address_province") var addressProvince: String,
-    @get:PropertyName("address_country") @set:PropertyName("address_country") var addressCountry: String,
-    @get:PropertyName("address_postal_code") @set:PropertyName("address_postal_code") var addressPostalCode: String,
+    @get:PropertyName("tag") @set:PropertyName("tag") var tag: String,
+    @get:PropertyName("coordinates") @set:PropertyName("coordinates") var coordinates: PlaceCoordinates,
+    @get:PropertyName("address") @set:PropertyName("address") var address: String,
+    @get:PropertyName("city") @set:PropertyName("city") var city: String,
+    @get:PropertyName("province") @set:PropertyName("province") var province: String,
+    @get:PropertyName("country") @set:PropertyName("country") var country: String,
+    @get:PropertyName("postal_code") @set:PropertyName("postal_code") var postalCode: String,
 )
 
 data class PlaceCoordinates(
-    @get:PropertyName("place_longitude") @set:PropertyName("place_longitude") var placeLongitude: Double,
-    @get:PropertyName("place_latitude") @set:PropertyName("place_latitude") var placeLatitude: Double,
+    @get:PropertyName("longitude") @set:PropertyName("longitude") var longitude: Double,
+    @get:PropertyName("latitude") @set:PropertyName("latitude") var latitude: Double,
 )
 
 data class MapRegion(
-    @get:PropertyName("region_center") @set:PropertyName("region_center") var regionCenter: PlaceCoordinates,
-    @get:PropertyName("region_radius") @set:PropertyName("region_radius") var regionRadius: Double,
+    @get:PropertyName("center") @set:PropertyName("center") var center: PlaceCoordinates,
+    @get:PropertyName("radius") @set:PropertyName("radius") var radius: Double,
+)
+
+data class Service(
+    var id:String = "",
+    @get:PropertyName("name") @set:PropertyName("name") var name: String,
+    @get:PropertyName("description") @set:PropertyName("description") var description: String,
+    @get:PropertyName("thumbnail_url") @set:PropertyName("thumbnail_url") var thumbnailUrl: String,
+    @get:PropertyName("recommended_price") @set:PropertyName("recommended_price") var recommendedPrice: Double,
 )

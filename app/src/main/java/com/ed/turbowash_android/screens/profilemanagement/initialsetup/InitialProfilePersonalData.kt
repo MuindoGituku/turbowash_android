@@ -1,4 +1,4 @@
-package com.ed.turbowash_android.screens.profilemanagement
+package com.ed.turbowash_android.screens.profilemanagement.initialsetup
 
 import android.Manifest
 import android.content.pm.PackageManager

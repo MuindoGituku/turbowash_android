@@ -1,4 +1,4 @@
-package com.ed.turbowash_android.screens.profilemanagement
+package com.ed.turbowash_android.screens.profilemanagement.initialsetup
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

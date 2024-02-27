@@ -26,9 +26,13 @@ import com.ed.turbowash_android.R
 import com.ed.turbowash_android.ui.theme.TurboWash_AndroidTheme
 import com.ed.turbowash_android.models.screensList
 import com.ed.turbowash_android.models.Screen
+import com.ed.turbowash_android.screens.mainnavigation.FavoriteHiresScreen
+import com.ed.turbowash_android.screens.mainnavigation.HomeLandingScreen
+import com.ed.turbowash_android.screens.mainnavigation.MainSettingsScreen
+import com.ed.turbowash_android.screens.mainnavigation.TrackBookingsScreen
 
 @Composable
-fun RootHomeNavigation() {
+fun RootHomeNavigation(onLogOutCustomer: () -> Unit) {
     val navController = rememberNavController()
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
@@ -38,19 +42,21 @@ fun RootHomeNavigation() {
             startDestination = Screen.Landing.route,
             Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Landing.route) { HomeScreen() }
-            composable(Screen.Schedule.route) { DashboardScreen() }
-            composable(Screen.MyWashers.route) { NotificationsScreen() }
-            composable(Screen.Settings.route) { ProfileScreen() }
+            composable(Screen.Landing.route) {
+                HomeLandingScreen()
+            }
+            composable(Screen.Activity.route) {
+                TrackBookingsScreen()
+            }
+            composable(Screen.Favorites.route) {
+                FavoriteHiresScreen()
+            }
+            composable(Screen.Settings.route) {
+                MainSettingsScreen(
+                    onLogOutCustomer = onLogOutCustomer
+                )
+            }
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun RootHomeNavigationPreview() {
-    TurboWash_AndroidTheme {
-        RootHomeNavigation()
     }
 }
 
@@ -106,20 +112,4 @@ fun BottomNavigationBar(navController: NavHostController) {
 fun currentRoute(navController: NavHostController): String? {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     return navBackStackEntry?.destination?.route
-}
-
-@Composable
-fun HomeScreen() { /* Content for Home Screen */
-}
-
-@Composable
-fun DashboardScreen() { /* Content for Dashboard Screen */
-}
-
-@Composable
-fun NotificationsScreen() { /* Content for Notifications Screen */
-}
-
-@Composable
-fun ProfileScreen() { /* Content for Profile Screen */
 }

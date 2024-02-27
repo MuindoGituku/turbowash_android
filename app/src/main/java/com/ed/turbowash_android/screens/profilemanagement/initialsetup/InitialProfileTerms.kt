@@ -1,4 +1,4 @@
-package com.ed.turbowash_android.screens.profilemanagement
+package com.ed.turbowash_android.screens.profilemanagement.initialsetup
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize

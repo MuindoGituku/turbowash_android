@@ -1,4 +1,4 @@
-package com.ed.turbowash_android.screens.profilemanagement
+package com.ed.turbowash_android.screens.profilemanagement.initialsetup
 
 import android.graphics.Bitmap
 import android.os.Build

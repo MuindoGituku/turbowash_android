@@ -13,14 +13,14 @@ data class Customer(
 )
 
 data class SavedVehicle(
-    @get:PropertyName("vehicle_tag") @set:PropertyName("vehicle_tag") var vehicleTag: String,
-    @get:PropertyName("vehicle_reg_no") @set:PropertyName("vehicle_reg_no") var vehicleRegNo: String,
-    @get:PropertyName("vehicle_desc") @set:PropertyName("vehicle_desc") var vehicleDesc: String,
-    @get:PropertyName("vehicle_images") @set:PropertyName("vehicle_images") var vehicleImages: MutableList<String>,
+    @get:PropertyName("tag") @set:PropertyName("tag") var tag: String,
+    @get:PropertyName("reg_no") @set:PropertyName("reg_no") var regNo: String,
+    @get:PropertyName("description") @set:PropertyName("description") var description: String,
+    @get:PropertyName("images") @set:PropertyName("images") var images: MutableList<String>,
 )
 
 data class PaymentCard(
-    @get:PropertyName("card_tag") @set:PropertyName("card_tag") var cardTag: String,
+    @get:PropertyName("tag") @set:PropertyName("tag") var tag: String,
     @get:PropertyName("name_on_card") @set:PropertyName("name_on_card") var nameOnCard: String,
     @get:PropertyName("card_number") @set:PropertyName("card_number") var cardNumber: String,
     @get:PropertyName("card_cvv") @set:PropertyName("card_cvv") var cardCVV: String,

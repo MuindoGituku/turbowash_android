@@ -29,18 +29,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ed.turbowash_android.repositories.PreferencesRepository
 import com.ed.turbowash_android.screens.RootHomeNavigation
 import com.ed.turbowash_android.screens.WelcomeWalkThrough
 import com.ed.turbowash_android.screens.auth.AuthActivityScreenView
-import com.ed.turbowash_android.screens.profilemanagement.ProfileSetupScreen
+import com.ed.turbowash_android.screens.profilemanagement.initialsetup.ProfileSetupScreen
 import com.ed.turbowash_android.ui.theme.TurboWash_AndroidTheme
-import com.ed.turbowash_android.vewmodelfactories.MainViewModelFactory
-import com.ed.turbowash_android.vewmodelfactories.UserAuthenticationViewModelFactory
 import com.ed.turbowash_android.viewmodels.MainViewModel
 import com.ed.turbowash_android.viewmodels.UserAuthenticationViewModel
 import com.google.android.libraries.places.api.Places
@@ -72,7 +68,10 @@ class MainActivity : ComponentActivity() {
                     if (navigationRoute == null) {
                         SplashScreenView()
                     } else {
-                        NavHost(navController = navController, startDestination = navigationRoute ?: "splash") {
+                        NavHost(
+                            navController = navController,
+                            startDestination = navigationRoute ?: "splash"
+                        ) {
                             composable("splash") { SplashScreenView() }
                             composable("onboarding") {
                                 WelcomeWalkThrough() {
@@ -80,13 +79,17 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             composable("auth") {
-                                AuthActivityScreenView(userAuthViewModel, onAuthCompletedSuccessfully = {
-                                    mainViewModel.onAuthCompletedSuccessfully()
-                                })
+                                AuthActivityScreenView(
+                                    userAuthViewModel,
+                                    onAuthCompletedSuccessfully = {
+                                        mainViewModel.onAuthCompletedSuccessfully()
+                                    })
                             }
-                            composable("profile") { ProfileSetupScreen {
-                                mainViewModel.onProfileCreatedSuccessfully()
-                            } }
+                            composable("profile") {
+                                ProfileSetupScreen {
+                                    mainViewModel.onProfileCreatedSuccessfully()
+                                }
+                            }
                             composable("home") { RootHomeNavigation() }
                         }
                     }
@@ -117,7 +120,7 @@ fun SplashScreenView() {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Column (horizontalAlignment = Alignment.CenterHorizontally){
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CircularProgressIndicator(
                 color = colorResource(id = R.color.turboBlue),
                 strokeWidth = 5.dp,
