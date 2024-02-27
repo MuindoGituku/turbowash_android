@@ -39,6 +39,9 @@ class CustomerProfileViewModel @Inject constructor(private val customerProfileRe
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _profileUploadCompleted = MutableStateFlow(false)
+    val profileUploadCompleted: StateFlow<Boolean> = _profileUploadCompleted
+
     init {
         refreshCustomerProfile()
     }
@@ -75,13 +78,20 @@ class CustomerProfileViewModel @Inject constructor(private val customerProfileRe
         _customerProfile.value = customerProfileRepo.getCustomerProfile()
     }
 
+    fun resetProfileUploadState() {
+        _profileUploadCompleted.value = false
+    }
+
     fun initialProfileUpload(
         fullNames: String, phoneNumber: String, gender: String, dateOfBirth: Date, profileImage: Bitmap?,
         homeAddress: String, city: String, province: String, country: String, postalCode: String, longitude: Double, latitude: Double
     ) = launchDataOperation {
         customerProfileRepo.initialCustomerProfileUpload(
             fullNames, phoneNumber, gender, dateOfBirth, profileImage, homeAddress, city, province, country, postalCode, longitude, latitude
-        ).also { _customerProfile.value = it }
+        ).also {
+            _customerProfile.value = it
+            _profileUploadCompleted.value = true
+        }
     }
 
     fun updateCustomerPersonalData(

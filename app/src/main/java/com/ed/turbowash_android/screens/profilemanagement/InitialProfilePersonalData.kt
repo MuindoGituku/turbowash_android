@@ -21,7 +21,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -37,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -56,21 +60,22 @@ import kotlinx.coroutines.launch
 fun PersonalInformationStep(
     onContinueClicked: () -> Unit,
     onBackClicked: () -> Unit,
-    imageBitmap:MutableState<Bitmap?>,
-    fullNames:MutableState<String>,
-    fullNamesValidationError:MutableState<Boolean>,
-    emailAddress:MutableState<String>,
-    phoneNumber:MutableState<String>,
-    phoneNumberValidationError:MutableState<Boolean>,
-    gender:MutableState<String>,
-    genderValidationError:MutableState<Boolean>,
-    dateOfBirth:MutableState<String>,
-    dateOfBirthValidationError:MutableState<Boolean>,
+    imageBitmap: MutableState<Bitmap?>,
+    fullNames: MutableState<String>,
+    fullNamesValidationError: MutableState<Boolean>,
+    emailAddress: MutableState<String>,
+    phoneNumber: MutableState<String>,
+    phoneNumberValidationError: MutableState<Boolean>,
+    gender: MutableState<String>,
+    genderValidationError: MutableState<Boolean>,
+    dateOfBirth: MutableState<String>,
+    dateOfBirthValidationError: MutableState<Boolean>,
     onClickGenderField: () -> Unit,
     onClickDateField: () -> Unit,
-    ) {
+) {
 
-    val modalBottomSheetState = androidx.compose.material.rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val modalBottomSheetState =
+        androidx.compose.material.rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -107,7 +112,11 @@ fun PersonalInformationStep(
                 takePictureLauncher.launch(null)
             } else {
                 // Handle the case where permission is denied.
-                Toast.makeText(context, "Camera permission is required to take photos", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    "Camera permission is required to take photos",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     )
@@ -126,6 +135,7 @@ fun PersonalInformationStep(
                             // Permission is already granted
                             takePictureLauncher.launch(null)
                         }
+
                         else -> {
                             // Request the permission
                             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
@@ -140,8 +150,11 @@ fun PersonalInformationStep(
                 }
             )
         }
-    ){
-        Column() {
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start,
@@ -264,20 +277,28 @@ fun PersonalInformationStep(
                     .fillMaxWidth()
                     .padding(10.dp),
             )
-            Row (horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(horizontalArrangement = Arrangement.SpaceBetween) {
                 MaxWidthButton(
-                    buttonText = "Save and Add Address",
+                    buttonText = "Go Back",
                     buttonAction = {
                         onBackClicked()
                     },
-                    customTextColor = Color.White,
+                    customTextColor = Color.Black,
+                    backgroundColor = colorResource(id = R.color.fadedGray),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(5.dp))
                 )
                 MaxWidthButton(
-                    buttonText = "Save and Add Address",
+                    buttonText = "Continue",
                     buttonAction = {
                         onContinueClicked()
                     },
                     customTextColor = Color.White,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(5.dp))
                 )
             }
         }

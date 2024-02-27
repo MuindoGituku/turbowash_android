@@ -24,6 +24,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            resValue("string", "google_api_client_key", "AIzaSyCDIz_wp79KkdiMXaAjAlCJFXjgz2aLDvo")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -50,8 +53,6 @@ android {
 }
 
 dependencies {
-    val hiltVersion = "2.48" // Define Hilt version (ensure this is the latest or required version)
-
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
@@ -72,9 +73,9 @@ dependencies {
     implementation("androidx.test:core-ktx:1.5.0")
 
     // Hilt dependencies
-    implementation("com.google.dagger:hilt-android:$hiltVersion")
+    implementation("com.google.dagger:hilt-android:2.49")
     implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
-    kapt("com.google.dagger:hilt-compiler:$hiltVersion")
+    kapt("com.google.dagger:hilt-compiler:2.49")
 
     // Testing dependencies
     testImplementation("junit:junit:4.13.2")
@@ -88,5 +89,5 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager-indicators:0.35.0-alpha")
 
     // LiveData
-    implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.2")
 }

@@ -20,10 +20,8 @@ class UserAuthenticationViewModel @Inject constructor(private val application: A
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Sign in success
                     _authenticationState.value = true
                 } else {
-                    // If sign in fails, display a message to the user.
                     Log.w("GoogleSignIn", "signInWithCredential:failure", task.exception)
                     _authenticationState.value = false
                 }
