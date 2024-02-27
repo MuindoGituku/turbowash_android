@@ -1,16 +1,7 @@
 package com.ed.turbowash_android.repositories
 
 import android.graphics.Bitmap
-import com.ed.turbowash_android.exceptions.AuthenticationException
-import com.ed.turbowash_android.exceptions.DataIntegrityException
-import com.ed.turbowash_android.exceptions.InvalidDataException
-import com.ed.turbowash_android.exceptions.NetworkException
-import com.ed.turbowash_android.exceptions.OperationFailedException
-import com.ed.turbowash_android.exceptions.PermissionDeniedException
-import com.ed.turbowash_android.exceptions.QuotaExceededException
-import com.ed.turbowash_android.exceptions.ResourceNotFoundException
-import com.ed.turbowash_android.exceptions.StorageException
-import com.ed.turbowash_android.exceptions.TimeoutException
+import com.ed.turbowash_android.exceptions.*
 import com.ed.turbowash_android.models.Customer
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.PersonalData
@@ -31,7 +22,7 @@ import java.io.IOException
 import java.util.Date
 import javax.inject.Singleton
 
-class CustomerProfileRepository (private val generalDatabaseActionsRepo: GeneralDatabaseActionsRepo) {
+class CustomerProfileRepository(private val generalDatabaseActionsRepo: GeneralDatabaseActionsRepo) {
     private val db: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance()
     }
@@ -40,7 +31,8 @@ class CustomerProfileRepository (private val generalDatabaseActionsRepo: General
         FirebaseAuth.getInstance()
     }
 
-    private fun getCurrentUser(): FirebaseUser = auth.currentUser ?: throw IllegalStateException("Not logged in")
+    private fun getCurrentUser(): FirebaseUser =
+        auth.currentUser ?: throw IllegalStateException("Not logged in")
 
     private suspend fun <T> executeWithExceptionHandling(block: suspend () -> T): T {
         return try {
@@ -77,8 +69,18 @@ class CustomerProfileRepository (private val generalDatabaseActionsRepo: General
     }
 
     suspend fun initialCustomerProfileUpload(
-        fullNames: String, phoneNumber: String, gender: String, dateOfBirth: Date, profileImage: Bitmap?,
-        homeAddress: String, city: String, province: String, country: String, postalCode: String, longitude: Double, latitude: Double
+        fullNames: String,
+        phoneNumber: String,
+        gender: String,
+        dateOfBirth: Date,
+        profileImage: Bitmap?,
+        homeAddress: String,
+        city: String,
+        province: String,
+        country: String,
+        postalCode: String,
+        longitude: Double,
+        latitude: Double
     ): Customer = executeWithExceptionHandling {
         val user = getCurrentUser()
 
@@ -92,20 +94,36 @@ class CustomerProfileRepository (private val generalDatabaseActionsRepo: General
         }
 
         val personalData = PersonalData(
-            fullNames = fullNames, emailAddress = user.email ?: "", phoneNumber = phoneNumber, profileImage = profileImageLink, bio = "",
-            gender = gender, dateOfBirth = Timestamp(dateOfBirth)
+            fullNames = fullNames,
+            emailAddress = user.email ?: "",
+            phoneNumber = phoneNumber,
+            profileImage = profileImageLink,
+            bio = "",
+            gender = gender,
+            dateOfBirth = Timestamp(dateOfBirth)
         )
 
         val savedAddress = SavedAddress(
-            addressTag = "Home",
-            addressCoordinates = PlaceCoordinates(
-                placeLongitude = longitude,
-                placeLatitude = latitude
+            tag = "Home",
+            coordinates = PlaceCoordinates(
+                longitude = longitude,
+                latitude = latitude
             ),
-            addressComplete = homeAddress, addressCity = city, addressProvince = province, addressCountry = country, addressPostalCode = postalCode
+            address = homeAddress,
+            city = city,
+            province = province,
+            country = country,
+            postalCode = postalCode
         )
 
-        val customer = Customer(personalData = personalData, savedPaymentCards = mutableListOf(), savedAddresses = mutableListOf(savedAddress), savedVehicles = mutableListOf(), favoriteHires = mutableListOf())
+        val customer = Customer(
+            personalData = personalData,
+            savedPaymentCards = mutableListOf(),
+            savedAddresses = mutableListOf(savedAddress),
+            savedVehicles = mutableListOf(),
+            favoriteHires = mutableListOf(),
+            dateJoined = Timestamp.now()
+        )
 
         db.collection("customers").document(user.uid).set(customer).await()
 
@@ -114,7 +132,13 @@ class CustomerProfileRepository (private val generalDatabaseActionsRepo: General
 
 
     suspend fun updateCustomerPersonalData(
-        fullNames: String, phoneNumber: String, bio: String, gender: String, dateOfBirth: Date, initialProfileURL: String, profileImage: Bitmap?
+        fullNames: String,
+        phoneNumber: String,
+        bio: String,
+        gender: String,
+        dateOfBirth: Date,
+        initialProfileURL: String,
+        profileImage: Bitmap?
     ): Customer = executeWithExceptionHandling {
         val user = getCurrentUser()
 
@@ -142,7 +166,10 @@ class CustomerProfileRepository (private val generalDatabaseActionsRepo: General
     }
 
 
-    suspend fun updateCustomerAddress(existingAddressTag: String, newAddressDetails: SavedAddress): Customer = executeWithExceptionHandling {
+    suspend fun updateCustomerAddress(
+        existingAddressTag: String,
+        newAddressDetails: SavedAddress
+    ): Customer = executeWithExceptionHandling {
         val user = getCurrentUser()
 
         val customerDocRef = db.collection("customers").document(user.uid)
@@ -151,16 +178,52 @@ class CustomerProfileRepository (private val generalDatabaseActionsRepo: General
             val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
                 ?: throw IllegalStateException("Customer not found")
 
-            customer.savedAddresses.indexOfFirst { it.addressTag == existingAddressTag }.takeIf { it != -1 }
+            customer.savedAddresses.indexOfFirst { it.tag == existingAddressTag }
+                .takeIf { it != -1 }
                 ?.let { index ->
-                customer.savedAddresses[index] = newAddressDetails
+                    customer.savedAddresses[index] = newAddressDetails
+                    transaction.update(customerDocRef, "saved_addresses", customer.savedAddresses)
+                } ?: throw IllegalStateException("Address not found")
+        }.await()
+        getCustomerProfile()
+    }
+
+    suspend fun addCustomerAddress(newAddress: SavedAddress): Customer =
+        executeWithExceptionHandling {
+            val user = getCurrentUser()
+
+            val customerDocRef = db.collection("customers").document(user.uid)
+
+            db.runTransaction { transaction ->
+                val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                    ?: throw IllegalStateException("Customer not found")
+
+                customer.savedAddresses.add(newAddress)
                 transaction.update(customerDocRef, "saved_addresses", customer.savedAddresses)
-            } ?: throw IllegalStateException("Address not found")
-        }.await()
-        getCustomerProfile()
-    }
+            }.await()
+            getCustomerProfile()
+        }
 
-    suspend fun addCustomerAddress(newAddress: SavedAddress): Customer = executeWithExceptionHandling {
+    suspend fun deleteCustomerAddress(selectedAddressTag: String): Customer =
+        executeWithExceptionHandling {
+            val user = getCurrentUser()
+
+            val customerDocRef = db.collection("customers").document(user.uid)
+
+            db.runTransaction { transaction ->
+                val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                    ?: throw IllegalStateException("Customer not found")
+
+                customer.savedAddresses.removeIf { it.tag == selectedAddressTag }
+                transaction.update(customerDocRef, "saved_addresses", customer.savedAddresses)
+            }.await()
+            getCustomerProfile()
+        }
+
+    suspend fun updateCustomerPaymentCard(
+        existingCardTag: String,
+        newCardDetails: PaymentCard
+    ): Customer = executeWithExceptionHandling {
         val user = getCurrentUser()
 
         val customerDocRef = db.collection("customers").document(user.uid)
@@ -169,76 +232,57 @@ class CustomerProfileRepository (private val generalDatabaseActionsRepo: General
             val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
                 ?: throw IllegalStateException("Customer not found")
 
-            customer.savedAddresses.add(newAddress)
-            transaction.update(customerDocRef, "saved_addresses", customer.savedAddresses)
-        }.await()
-        getCustomerProfile()
-    }
-
-    suspend fun deleteCustomerAddress(selectedAddressTag: String): Customer = executeWithExceptionHandling {
-        val user = getCurrentUser()
-
-        val customerDocRef = db.collection("customers").document(user.uid)
-
-        db.runTransaction { transaction ->
-            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
-                ?: throw IllegalStateException("Customer not found")
-
-            customer.savedAddresses.removeIf { it.addressTag == selectedAddressTag }
-            transaction.update(customerDocRef, "saved_addresses", customer.savedAddresses)
-        }.await()
-        getCustomerProfile()
-    }
-
-    suspend fun updateCustomerPaymentCard(existingCardTag: String, newCardDetails: PaymentCard): Customer = executeWithExceptionHandling {
-        val user = getCurrentUser()
-
-        val customerDocRef = db.collection("customers").document(user.uid)
-
-        db.runTransaction { transaction ->
-            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
-                ?: throw IllegalStateException("Customer not found")
-
-            customer.savedPaymentCards.indexOfFirst { it.cardTag == existingCardTag }.takeIf { it != -1 }
+            customer.savedPaymentCards.indexOfFirst { it.tag == existingCardTag }
+                .takeIf { it != -1 }
                 ?.let { index ->
-                customer.savedPaymentCards[index] = newCardDetails
-                transaction.update(customerDocRef, "saved_payment_cards", customer.savedPaymentCards)
-            } ?: throw IllegalStateException("Payment card not found")
+                    customer.savedPaymentCards[index] = newCardDetails
+                    transaction.update(
+                        customerDocRef,
+                        "saved_payment_cards",
+                        customer.savedPaymentCards
+                    )
+                } ?: throw IllegalStateException("Payment card not found")
         }.await()
         getCustomerProfile()
     }
 
-    suspend fun addCustomerPaymentCard(newCard: PaymentCard): Customer = executeWithExceptionHandling {
-        val user = getCurrentUser()
+    suspend fun addCustomerPaymentCard(newCard: PaymentCard): Customer =
+        executeWithExceptionHandling {
+            val user = getCurrentUser()
 
-        val customerDocRef = db.collection("customers").document(user.uid)
+            val customerDocRef = db.collection("customers").document(user.uid)
 
-        db.runTransaction { transaction ->
-            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
-                ?: throw IllegalStateException("Customer not found")
+            db.runTransaction { transaction ->
+                val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                    ?: throw IllegalStateException("Customer not found")
 
-            customer.savedPaymentCards.apply {
-                add(newCard)
-                transaction.update(customerDocRef, "saved_payment_cards", this)
-            }
-        }.await()
-        getCustomerProfile()
-    }
+                customer.savedPaymentCards.apply {
+                    add(newCard)
+                    transaction.update(customerDocRef, "saved_payment_cards", this)
+                }
+            }.await()
+            getCustomerProfile()
+        }
 
-    suspend fun deleteCustomerPaymentCard(selectedCardTag: String): Customer = executeWithExceptionHandling {
-        val user = getCurrentUser()
+    suspend fun deleteCustomerPaymentCard(selectedCardTag: String): Customer =
+        executeWithExceptionHandling {
+            val user = getCurrentUser()
 
-        val customerDocRef = db.collection("customers").document(user.uid)
+            val customerDocRef = db.collection("customers").document(user.uid)
 
-        db.runTransaction { transaction ->
-            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
-                ?: throw IllegalStateException("Customer not found")
+            db.runTransaction { transaction ->
+                val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                    ?: throw IllegalStateException("Customer not found")
 
-            customer.savedPaymentCards.removeIf { it.cardTag == selectedCardTag }
-            transaction.update(customerDocRef, "saved_payment_cards", customer.savedPaymentCards)
-        }.await()
-        getCustomerProfile()
-    }
+                customer.savedPaymentCards.removeIf { it.tag == selectedCardTag }
+                transaction.update(
+                    customerDocRef,
+                    "saved_payment_cards",
+                    customer.savedPaymentCards
+                )
+            }.await()
+            getCustomerProfile()
+        }
 }
 
 @Module
@@ -247,7 +291,8 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideGeneralDatabaseActionsRepo(): GeneralDatabaseActionsRepo = GeneralDatabaseActionsRepo()
+    fun provideGeneralDatabaseActionsRepo(): GeneralDatabaseActionsRepo =
+        GeneralDatabaseActionsRepo()
 
     @Provides
     @Singleton

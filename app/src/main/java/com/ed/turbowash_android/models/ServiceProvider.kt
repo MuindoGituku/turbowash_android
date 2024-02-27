@@ -1,5 +1,6 @@
 package com.ed.turbowash_android.models
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 
 data class ServiceProvider(
@@ -10,6 +11,7 @@ data class ServiceProvider(
     @get:PropertyName("preferred_region") @set:PropertyName("preferred_region") var preferredRegion: MapRegion,
     @get:PropertyName("services_offered") @set:PropertyName("services_offered") var servicesOffered: MutableList<String>,
     @get:PropertyName("items_in_possession") @set:PropertyName("items_in_possession") var itemsInPossession: MutableList<String>,
+    @get:PropertyName("date_joined") @set:PropertyName("date_joined") var dateJoined: Timestamp,
 )
 
 data class BankingInfo(

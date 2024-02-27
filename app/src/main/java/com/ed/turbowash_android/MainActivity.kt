@@ -90,7 +90,11 @@ class MainActivity : ComponentActivity() {
                                     mainViewModel.onProfileCreatedSuccessfully()
                                 }
                             }
-                            composable("home") { RootHomeNavigation() }
+                            composable("home") {
+                                RootHomeNavigation {
+                                    mainViewModel.onCustomerLogOutSuccessfully()
+                                }
+                            }
                         }
                     }
                 }

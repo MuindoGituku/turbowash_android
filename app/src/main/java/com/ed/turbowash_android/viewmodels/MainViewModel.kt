@@ -78,6 +78,13 @@ class MainViewModel @Inject constructor(private val preferencesRepository: Prefe
         }
     }
 
+    fun onCustomerLogOutSuccessfully(){
+        viewModelScope.launch {
+            _navigationRoute.value = "splash"
+            determineNextScreen()
+        }
+    }
+
     private suspend fun determineNextScreen() {
         when {
             !checkIfUserIsAuthenticated() -> _navigationRoute.value = "auth"

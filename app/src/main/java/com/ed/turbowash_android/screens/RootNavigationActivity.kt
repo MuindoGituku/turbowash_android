@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,10 +32,13 @@ import com.ed.turbowash_android.screens.mainnavigation.FavoriteHiresScreen
 import com.ed.turbowash_android.screens.mainnavigation.HomeLandingScreen
 import com.ed.turbowash_android.screens.mainnavigation.MainSettingsScreen
 import com.ed.turbowash_android.screens.mainnavigation.TrackBookingsScreen
+import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 
 @Composable
 fun RootHomeNavigation(onLogOutCustomer: () -> Unit) {
     val navController = rememberNavController()
+    val customerProfileViewModel: CustomerProfileViewModel = hiltViewModel()
+
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
@@ -43,17 +48,24 @@ fun RootHomeNavigation(onLogOutCustomer: () -> Unit) {
             Modifier.padding(innerPadding)
         ) {
             composable(Screen.Landing.route) {
-                HomeLandingScreen()
+                HomeLandingScreen(
+                    customerProfileViewModel = customerProfileViewModel
+                )
             }
             composable(Screen.Activity.route) {
-                TrackBookingsScreen()
+                TrackBookingsScreen(
+                    customerProfileViewModel = customerProfileViewModel
+                )
             }
             composable(Screen.Favorites.route) {
-                FavoriteHiresScreen()
+                FavoriteHiresScreen(
+                    customerProfileViewModel = customerProfileViewModel
+                )
             }
             composable(Screen.Settings.route) {
                 MainSettingsScreen(
-                    onLogOutCustomer = onLogOutCustomer
+                    onLogOutCustomer = onLogOutCustomer,
+                    customerProfileViewModel = customerProfileViewModel
                 )
             }
         }

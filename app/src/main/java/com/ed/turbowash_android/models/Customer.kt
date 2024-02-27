@@ -1,5 +1,6 @@
 package com.ed.turbowash_android.models
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 import java.util.Date
 
@@ -10,6 +11,7 @@ data class Customer(
     @get:PropertyName("saved_addresses") @set:PropertyName("saved_addresses") var savedAddresses: MutableList<SavedAddress>,
     @get:PropertyName("saved_vehicles") @set:PropertyName("saved_vehicles") var savedVehicles: MutableList<SavedVehicle>,
     @get:PropertyName("favorite_hires") @set:PropertyName("favorite_hires") var favoriteHires: MutableList<String>,
+    @get:PropertyName("date_joined") @set:PropertyName("date_joined") var dateJoined: Timestamp,
 )
 
 data class SavedVehicle(

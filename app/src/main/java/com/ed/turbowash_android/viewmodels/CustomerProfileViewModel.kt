@@ -3,16 +3,7 @@ package com.ed.turbowash_android.viewmodels
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ed.turbowash_android.exceptions.AuthenticationException
-import com.ed.turbowash_android.exceptions.DataIntegrityException
-import com.ed.turbowash_android.exceptions.InvalidDataException
-import com.ed.turbowash_android.exceptions.NetworkException
-import com.ed.turbowash_android.exceptions.OperationFailedException
-import com.ed.turbowash_android.exceptions.PermissionDeniedException
-import com.ed.turbowash_android.exceptions.QuotaExceededException
-import com.ed.turbowash_android.exceptions.ResourceNotFoundException
-import com.ed.turbowash_android.exceptions.StorageException
-import com.ed.turbowash_android.exceptions.TimeoutException
+import com.ed.turbowash_android.exceptions.*
 import com.ed.turbowash_android.models.Customer
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
