@@ -63,7 +63,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
 
     implementation("com.google.firebase:firebase-auth:22.3.1")
-    implementation("com.google.firebase:firebase-firestore:24.10.2")
+    implementation("com.google.firebase:firebase-firestore:24.10.3")
     implementation("com.google.firebase:firebase-storage:20.3.0")
     implementation("com.google.firebase:firebase-functions:20.4.0")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
@@ -89,5 +89,5 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager-indicators:0.35.0-alpha")
 
     // LiveData
-    implementation("androidx.compose.runtime:runtime-livedata:1.6.2")
+    implementation("androidx.compose.runtime:runtime-livedata")
 }

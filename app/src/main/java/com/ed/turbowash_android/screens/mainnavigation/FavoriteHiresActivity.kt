@@ -1,7 +1,11 @@
 package com.ed.turbowash_android.screens.mainnavigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 
 @Composable
-fun FavoriteHiresScreen(customerProfileViewModel: CustomerProfileViewModel){}
+fun FavoriteHiresScreen(
+    customerProfileViewModel: CustomerProfileViewModel,
+    navController: NavController
+){}

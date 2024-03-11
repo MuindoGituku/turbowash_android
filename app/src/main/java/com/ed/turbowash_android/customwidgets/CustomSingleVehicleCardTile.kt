@@ -1,0 +1,84 @@
+package com.ed.turbowash_android.customwidgets
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import com.ed.turbowash_android.R
+import com.ed.turbowash_android.models.SavedVehicle
+import com.google.accompanist.pager.HorizontalPagerIndicator
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CustomSingleVehicleTile(
+    vehicle: SavedVehicle,
+    onTapUpdate: () -> Void,
+    onTapDelete: () -> Void,
+    outerPaddingValues: PaddingValues = PaddingValues(10.dp),
+    innerPaddingValues: PaddingValues = PaddingValues(10.dp)
+    ){
+    val pages = remember { vehicle.images }
+    val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = 0){ pages.size }
+
+    Column (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(outerPaddingValues)
+    ) {
+        Box (
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+        ) {
+            HorizontalPager(state = pagerState, userScrollEnabled = true, modifier = Modifier.fillMaxSize()) {page ->
+                val currentPage = pages[page]
+                Image(
+                    painter = painterResource(
+                        id = R.drawable.turbowash_logo
+                    ),
+                    contentDescription = "Vehicle Image $page"
+                )
+                HorizontalPagerIndicator(
+                    pagerState = pagerState,
+                    pageCount = pages.size,
+                    modifier = Modifier.padding(20.dp),
+                    activeColor = colorResource(id = R.color.turboBlue),
+                    inactiveColor = Color.Gray
+                )
+            }
+        }
+        Column (
+            modifier = Modifier.padding(innerPaddingValues)
+        ) {
+            Row {
+                Text(
+                    text = vehicle.tag
+                )
+                Text(
+                    text = vehicle.regNo
+                )
+            }
+            Text(
+                text = vehicle.description
+            )
+            Row {
+
+            }
+        }
+    }
+}

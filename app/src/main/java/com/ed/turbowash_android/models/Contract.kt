@@ -31,7 +31,7 @@ data class ContractInfo(
 )
 
 data class BriefProfile(
-    @get:PropertyName("profile_id") @set:PropertyName("profile_id") var message: String,
-    @get:PropertyName("full_names") @set:PropertyName("full_names") var sendTime: String,
-    @get:PropertyName("image_url") @set:PropertyName("image_url") var senderID: String,
+    @get:PropertyName("profile_id") @set:PropertyName("profile_id") var profileID: String,
+    @get:PropertyName("full_names") @set:PropertyName("full_names") var fullNames: String,
+    @get:PropertyName("image_url") @set:PropertyName("image_url") var imageUrl: String,
 )

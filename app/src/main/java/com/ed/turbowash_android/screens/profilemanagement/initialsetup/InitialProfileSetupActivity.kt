@@ -57,7 +57,7 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
     val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
     val fullNames = remember { mutableStateOf("") }
     val fullNamesValidationError = remember { mutableStateOf(false) }
-    val emailAddress = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser!!.email.toString()) }
+    val emailAddress = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser?.email.toString()) }
     val phoneNumber = remember { mutableStateOf("") }
     val phoneNumberValidationError = remember { mutableStateOf(false) }
     val gender = remember { mutableStateOf("") }
