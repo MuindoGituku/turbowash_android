@@ -35,6 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ed.turbowash_android.screens.RootHomeNavigation
 import com.ed.turbowash_android.screens.WelcomeWalkThrough
 import com.ed.turbowash_android.screens.auth.AuthActivityScreenView
+import com.ed.turbowash_android.screens.auth.InvalidCredentialsActivity
 import com.ed.turbowash_android.screens.profilemanagement.initialsetup.ProfileSetupScreen
 import com.ed.turbowash_android.ui.theme.TurboWash_AndroidTheme
 import com.ed.turbowash_android.viewmodels.MainViewModel
@@ -92,7 +93,14 @@ class MainActivity : ComponentActivity() {
                             }
                             composable("home") {
                                 RootHomeNavigation {
-                                    mainViewModel.onCustomerLogOutSuccessfully()
+                                    userAuthViewModel.logoutAuthenticatedUser().also {
+                                        mainViewModel.onCustomerLogOutSuccessfully()
+                                    }
+                                }
+                            }
+                            composable("invalid"){
+                                InvalidCredentialsActivity(viewModel = userAuthViewModel) {
+                                    mainViewModel.onAuthCompletedSuccessfully()
                                 }
                             }
                         }

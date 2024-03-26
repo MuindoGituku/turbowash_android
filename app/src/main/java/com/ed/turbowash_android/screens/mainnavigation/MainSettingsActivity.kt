@@ -77,7 +77,7 @@ fun MainSettingsScreen(
                             CustomUserProfileCard(
                                 onProfileCardClick = { },
                                 fullNames = customer.value!!.personalData.fullNames,
-                                emailAddress = customer.value!!.personalData.emailAddress,
+                                emailAddress = customer.value!!.personalData.emailAddress.ifEmpty { "(hidden email address)" },
                                 phoneNumber = customer.value!!.personalData.phoneNumber,
                                 cardPaddingValues = PaddingValues(
                                     start = 10.dp,

@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +62,7 @@ fun PersonalInformationStep(
     onContinueClicked: () -> Unit,
     onBackClicked: () -> Unit,
     imageBitmap: MutableState<Bitmap?>,
+    onlineImage: MutableState<String>,
     fullNames: MutableState<String>,
     fullNamesValidationError: MutableState<Boolean>,
     emailAddress: MutableState<String>,
@@ -69,6 +71,7 @@ fun PersonalInformationStep(
     gender: MutableState<String>,
     genderValidationError: MutableState<Boolean>,
     dateOfBirth: MutableState<String>,
+    dateTriggered: MutableState<Boolean>,
     dateOfBirthValidationError: MutableState<Boolean>,
     onClickGenderField: () -> Unit,
     onClickDateField: () -> Unit,
@@ -256,7 +259,7 @@ fun PersonalInformationStep(
                     .padding(10.dp),
             )
             CustomIconClickableField(
-                fieldLabel = "Gender",
+                fieldLabel = "Select Gender",
                 fieldValue = gender,
                 hasValidationError = genderValidationError,
                 validationErrorText = "Please select a gender you identify with in order to proceed.",
@@ -268,7 +271,7 @@ fun PersonalInformationStep(
             )
             CustomIconClickableField(
                 fieldLabel = "Date Of Birth",
-                fieldValue = dateOfBirth,
+                fieldValue = if (dateTriggered.value) dateOfBirth else mutableStateOf("Enter Your Date of Birth"),
                 hasValidationError = dateOfBirthValidationError,
                 validationErrorText = "This app is limited to users above the age of 18 years.",
                 onClick = { onClickDateField() },

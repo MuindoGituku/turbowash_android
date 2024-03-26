@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.runtime.Composable
@@ -62,6 +63,7 @@ fun WelcomeWalkThrough(onOnboardingComplete: () -> Unit) {
                                 onOnboardingComplete()
                             },
                             customTextColor = Color.White,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 } else {
@@ -74,6 +76,7 @@ fun WelcomeWalkThrough(onOnboardingComplete: () -> Unit) {
                                 }
                             },
                             customTextColor = Color.White,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }

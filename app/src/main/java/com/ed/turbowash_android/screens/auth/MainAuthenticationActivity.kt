@@ -59,7 +59,8 @@ fun AuthActivityScreenView(viewModel: UserAuthenticationViewModel, onAuthComplet
     val googleSignInClient = remember {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.web_client_id))
-            .requestEmail()
+            .requestProfile()
+            //.forceCodeForRefreshToken()
             .build()
         GoogleSignIn.getClient(context, gso)
     }

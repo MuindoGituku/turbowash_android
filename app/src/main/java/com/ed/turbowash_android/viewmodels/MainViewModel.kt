@@ -41,7 +41,12 @@ class MainViewModel @Inject constructor(private val preferencesRepository: Prefe
             if (!documentExists) {
                 _navigationRoute.value = "profile"
             } else {
-                _navigationRoute.value = "home"
+                val userIsWasher = checkUserIsWasher(userId)
+                if (userIsWasher){
+                    _navigationRoute.value = "invalid"
+                } else {
+                    _navigationRoute.value = "home"
+                }
             }
         }
     }
@@ -90,6 +95,7 @@ class MainViewModel @Inject constructor(private val preferencesRepository: Prefe
             !checkIfUserIsAuthenticated() -> _navigationRoute.value = "auth"
             getUserId() == null -> _navigationRoute.value = "auth"
             !checkFirestoreDocument(getUserId()!!) -> _navigationRoute.value = "profile"
+            checkUserIsWasher(getUserId()!!) -> _navigationRoute.value = "invalid"
             else -> _navigationRoute.value = "home"
         }
     }
@@ -98,6 +104,16 @@ class MainViewModel @Inject constructor(private val preferencesRepository: Prefe
         return try {
             val db = FirebaseFirestore.getInstance()
             val documentSnapshot = db.collection("customers").document(userId).get().await()
+            documentSnapshot.exists()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private suspend fun checkUserIsWasher(userId: String): Boolean {
+        return try {
+            val db = FirebaseFirestore.getInstance()
+            val documentSnapshot = db.collection("providers").document(userId).get().await()
             documentSnapshot.exists()
         } catch (e: Exception) {
             false

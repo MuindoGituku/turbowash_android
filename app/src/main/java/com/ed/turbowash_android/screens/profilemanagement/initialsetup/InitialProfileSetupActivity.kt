@@ -55,14 +55,17 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
     var showGenderDialog by remember { mutableStateOf(false) }
 
     val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
-    val fullNames = remember { mutableStateOf("") }
+    val onlineImage = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser?.photoUrl.toString()) }
+
+    val fullNames = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser?.displayName.toString()) }
     val fullNamesValidationError = remember { mutableStateOf(false) }
-    val emailAddress = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser?.email.toString()) }
-    val phoneNumber = remember { mutableStateOf("") }
+    val emailAddress = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser?.email ?: run { "(hidden email address" }) }
+    val phoneNumber = remember { mutableStateOf(FirebaseAuth.getInstance().currentUser?.phoneNumber.toString()) }
     val phoneNumberValidationError = remember { mutableStateOf(false) }
     val gender = remember { mutableStateOf("") }
     val genderValidationError = remember { mutableStateOf(false) }
     val selectedDateOfBirth = remember { mutableStateOf(LocalDate.now()) }
+    val triggeredDateOfBirth = remember { mutableStateOf(false) }
     val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
     val dateOfBirthText = remember(selectedDateOfBirth.value) {
         mutableStateOf("Selected ${selectedDateOfBirth.value.format(dateFormatter)}")
@@ -187,6 +190,7 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
                         onBackClicked = {
                             currentStepView = ProfileSetupStep.BriefingAndIntro
                         },
+                        onlineImage = onlineImage,
                         fullNames = fullNames,
                         fullNamesValidationError = fullNamesValidationError,
                         emailAddress = emailAddress,
@@ -196,6 +200,7 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
                         gender = gender,
                         genderValidationError = genderValidationError,
                         dateOfBirth = dateOfBirthText,
+                        dateTriggered = triggeredDateOfBirth,
                         dateOfBirthValidationError = dateOfBirthValidationError,
                         onClickDateField = { showDatePickerDialog = true },
                         onClickGenderField = { showGenderDialog = true },
@@ -234,6 +239,7 @@ fun ProfileSetupScreen(onProfileCreatedSuccessfully: () -> Unit) {
             selectedDate = selectedDateOfBirth.value,
             onDateSelected = { date ->
                 selectedDateOfBirth.value = date
+                triggeredDateOfBirth.value = true
                 showDatePickerDialog = false
             }
         )

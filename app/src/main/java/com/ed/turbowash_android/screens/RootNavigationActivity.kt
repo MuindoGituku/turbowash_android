@@ -17,11 +17,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.models.screensList
 import com.ed.turbowash_android.models.Screen
@@ -44,97 +47,160 @@ import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 fun RootHomeNavigation(onLogOutCustomer: () -> Unit) {
     val navController = rememberNavController()
     val customerProfileViewModel: CustomerProfileViewModel = hiltViewModel()
+    val shouldShowBottomBar = navController.currentBackStackEntryAsState().value?.destination?.route in listOf(
+        Screen.Landing.route,
+        Screen.Activity.route,
+        Screen.Favorites.route,
+        Screen.Settings.route
+    )
 
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
+        bottomBar = { if (shouldShowBottomBar) BottomNavigationBar(navController) }
     ) { innerPadding ->
         NavHost(
-            navController,
-            startDestination = Screen.Landing.route,
-            Modifier.padding(innerPadding)
+            navController = navController,
+            startDestination = "main",
+            modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Landing.route) {
-                HomeLandingScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
+            navigation(startDestination = Screen.Landing.route, route = "main") {
+                addMainGraph(navController, onLogOutCustomer, customerProfileViewModel)
             }
-            composable(Screen.Activity.route) {
-                TrackBookingsScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.Favorites.route) {
-                FavoriteHiresScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.Settings.route) {
-                MainSettingsScreen(
-                    onLogOutCustomer = onLogOutCustomer,
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.SavedAddressesList.route) {
-                ViewSavedAddressesScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.AddSavedAddress.route) {
-                AddSavedAddressScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.SavedVehiclesList.route) {
-                UpdateSavedAddressScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.SavedVehiclesList.route) {
-                ViewSavedVehiclesScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.AddSavedVehicle.route) {
-                AddSavedVehicleScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.SavedVehiclesList.route) {
-                UpdateSavedVehicleScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.PaymentCardsList.route) {
-                ViewPaymentCardsScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.AddPaymentCard.route) {
-                AddPaymentCardScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
-            composable(Screen.PaymentCardsList.route) {
-                UpdatePaymentCardScreen(
-                    customerProfileViewModel = customerProfileViewModel,
-                    navController = navController
-                )
-            }
+            managePersonalDataGraph(navController, customerProfileViewModel)
+            manageSavedAddressesGraph(navController, customerProfileViewModel)
+            manageSavedVehiclesGraph(navController, customerProfileViewModel)
+            managePaymentCardsGraph(navController, customerProfileViewModel)
         }
     }
 }
+
+fun NavGraphBuilder.addMainGraph(
+    navController: NavController,
+    onLogOutCustomer: () -> Unit,
+    customerProfileViewModel: CustomerProfileViewModel
+) {
+    composable(Screen.Landing.route) {
+        HomeLandingScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.Activity.route) {
+        TrackBookingsScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.Favorites.route) {
+        FavoriteHiresScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.Settings.route) {
+        MainSettingsScreen(
+            onLogOutCustomer = onLogOutCustomer,
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+}
+
+fun NavGraphBuilder.manageSavedAddressesGraph(
+    navController: NavController,
+    customerProfileViewModel: CustomerProfileViewModel
+) {
+    composable(Screen.SavedAddressesList.route) {
+        ViewSavedAddressesScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.AddSavedAddress.route) {
+        AddSavedAddressScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.SavedVehiclesList.route) {
+        UpdateSavedAddressScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+}
+
+fun NavGraphBuilder.manageSavedVehiclesGraph(
+    navController: NavController,
+    customerProfileViewModel: CustomerProfileViewModel
+) {
+    composable(Screen.SavedVehiclesList.route) {
+        ViewSavedVehiclesScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.AddSavedVehicle.route) {
+        AddSavedVehicleScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.SavedVehiclesList.route) {
+        UpdateSavedVehicleScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+}
+
+fun NavGraphBuilder.managePaymentCardsGraph(
+    navController: NavController,
+    customerProfileViewModel: CustomerProfileViewModel
+) {
+    composable(Screen.PaymentCardsList.route) {
+        ViewPaymentCardsScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.AddPaymentCard.route) {
+        AddPaymentCardScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.PaymentCardsList.route) {
+        UpdatePaymentCardScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+}
+
+fun NavGraphBuilder.managePersonalDataGraph(
+    navController: NavController,
+    customerProfileViewModel: CustomerProfileViewModel
+) {
+    composable(Screen.SavedAddressesList.route) {
+        ViewSavedAddressesScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.AddSavedAddress.route) {
+        AddSavedAddressScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+    composable(Screen.SavedVehiclesList.route) {
+        UpdateSavedAddressScreen(
+            customerProfileViewModel = customerProfileViewModel,
+            navController = navController
+        )
+    }
+}
+
 
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {

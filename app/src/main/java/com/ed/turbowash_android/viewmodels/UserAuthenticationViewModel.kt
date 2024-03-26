@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,5 +29,17 @@ class UserAuthenticationViewModel @Inject constructor(private val application: A
                 }
             }
     }
+
+    fun logoutAuthenticatedUser() {
+        FirebaseAuth.getInstance().signOut()
+        GoogleSignIn.getClient(application, GoogleSignInOptions.DEFAULT_SIGN_IN).apply {
+            signOut().addOnCompleteListener {
+                revokeAccess().addOnCompleteListener {
+                    _authenticationState.value = false
+                }
+            }
+        }
+    }
+
 }
 
