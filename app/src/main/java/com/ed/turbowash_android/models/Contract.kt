@@ -9,11 +9,12 @@ data class Contract(
     @get:PropertyName("selected_address") @set:PropertyName("selected_address") var address: SavedAddress,
     @get:PropertyName("selected_service") @set:PropertyName("selected_service") var service: ContractInfo,
     @get:PropertyName("bill_card") @set:PropertyName("bill_card") var billCard: PaymentCard,
+    @get:PropertyName("contract_title") @set:PropertyName("contract_title") var contractTitle: String,
     @get:PropertyName("proposed_date") @set:PropertyName("proposed_date") var proposedDate: Timestamp,
     @get:PropertyName("confirmed_date") @set:PropertyName("confirmed_date") var confirmedDate: Timestamp,
     @get:PropertyName("customer") @set:PropertyName("customer") var customer: BriefProfile,
     @get:PropertyName("provider") @set:PropertyName("provider") var provider: BriefProfile,
-    @get:PropertyName("contract_status") @set:PropertyName("contract_status") var contractStatus: String,
+    @get:PropertyName("contract_status") @set:PropertyName("contract_status") var contractStatus: ContractStatus,
     @get:PropertyName("conversation") @set:PropertyName("conversation") var conversation: MutableList<Message>,
 )
 
@@ -34,4 +35,11 @@ data class BriefProfile(
     @get:PropertyName("profile_id") @set:PropertyName("profile_id") var profileID: String,
     @get:PropertyName("full_names") @set:PropertyName("full_names") var fullNames: String,
     @get:PropertyName("image_url") @set:PropertyName("image_url") var imageUrl: String,
+)
+
+data class ContractStatus(
+    @get:PropertyName("desc_message") @set:PropertyName("desc_message") var descriptiveMessage: String,
+    @get:PropertyName("brief_message") @set:PropertyName("brief_message") var briefMessage: String,
+    @get:PropertyName("latest_update") @set:PropertyName("latest_update") var latestUpdateTime: Timestamp,
+    @get:PropertyName("updater_id") @set:PropertyName("updater_id") var updaterID: String,
 )
