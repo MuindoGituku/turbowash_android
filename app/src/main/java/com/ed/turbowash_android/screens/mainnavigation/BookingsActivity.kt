@@ -80,7 +80,7 @@ fun TrackBookingsScreen(
                 customer.value != null -> {
                     TabRow(
                         selectedTabIndex = selectedTabIndex,
-                        backgroundColor = Color.White,
+                        backgroundColor = MaterialTheme.colorScheme.background,
                         contentColor = Color.Black,
                         indicator = { tabPositions ->
                             TabRowDefaults.Indicator(
@@ -103,10 +103,16 @@ fun TrackBookingsScreen(
                         selectedTabIndex = page
                         when (selectedTabIndex) {
                             0 -> {
-                                Text("Scheduled Tab Content")
+                                ScheduledBookingsActivity(
+                                    customerProfileViewModel = customerProfileViewModel,
+                                    navController = navController
+                                )
                             }
                             1 -> {
-                                Text("Past Bookings Tab Content")
+                                CompletedBookingsActivity(
+                                    customerProfileViewModel = customerProfileViewModel,
+                                    navController = navController
+                                )
                             }
                         }
                     }

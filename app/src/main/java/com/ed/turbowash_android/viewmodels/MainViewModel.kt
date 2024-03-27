@@ -13,7 +13,8 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val preferencesRepository: PreferencesRepository) : ViewModel() {
+class MainViewModel @Inject constructor(private val preferencesRepository: PreferencesRepository) :
+    ViewModel() {
     private val _navigationRoute = MutableLiveData<String>()
     val navigationRoute: LiveData<String> = _navigationRoute
 
@@ -37,13 +38,13 @@ class MainViewModel @Inject constructor(private val preferencesRepository: Prefe
                 _navigationRoute.value = "auth"
                 return@launch
             }
-            val documentExists = checkFirestoreDocument(userId)
-            if (!documentExists) {
-                _navigationRoute.value = "profile"
+            val userIsWasher = checkUserIsWasher(userId)
+            if (userIsWasher) {
+                _navigationRoute.value = "invalid"
             } else {
-                val userIsWasher = checkUserIsWasher(userId)
-                if (userIsWasher){
-                    _navigationRoute.value = "invalid"
+                val documentExists = checkFirestoreDocument(userId)
+                if (!documentExists) {
+                    _navigationRoute.value = "profile"
                 } else {
                     _navigationRoute.value = "home"
                 }
@@ -69,21 +70,21 @@ class MainViewModel @Inject constructor(private val preferencesRepository: Prefe
         }
     }
 
-    fun onAuthCompletedSuccessfully(){
+    fun onAuthCompletedSuccessfully() {
         viewModelScope.launch {
             _navigationRoute.value = "splash"
             determineNextScreen()
         }
     }
 
-    fun onProfileCreatedSuccessfully(){
+    fun onProfileCreatedSuccessfully() {
         viewModelScope.launch {
             _navigationRoute.value = "splash"
             determineNextScreen()
         }
     }
 
-    fun onCustomerLogOutSuccessfully(){
+    fun onCustomerLogOutSuccessfully() {
         viewModelScope.launch {
             _navigationRoute.value = "splash"
             determineNextScreen()
@@ -94,8 +95,8 @@ class MainViewModel @Inject constructor(private val preferencesRepository: Prefe
         when {
             !checkIfUserIsAuthenticated() -> _navigationRoute.value = "auth"
             getUserId() == null -> _navigationRoute.value = "auth"
-            !checkFirestoreDocument(getUserId()!!) -> _navigationRoute.value = "profile"
             checkUserIsWasher(getUserId()!!) -> _navigationRoute.value = "invalid"
+            !checkFirestoreDocument(getUserId()!!) -> _navigationRoute.value = "profile"
             else -> _navigationRoute.value = "home"
         }
     }

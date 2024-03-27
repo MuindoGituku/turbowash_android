@@ -19,9 +19,14 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.tasks.await
 import java.io.IOException
 import java.util.Date
+import javax.inject.Singleton
 
 class TurboServicesRepository() {
     private val db: FirebaseFirestore by lazy {
@@ -73,4 +78,13 @@ class TurboServicesRepository() {
             servicesList
         }
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ServicesRepositoryModule {
+
+    @Provides
+    @Singleton
+    fun provideTurboServicesRepository(): TurboServicesRepository = TurboServicesRepository()
 }

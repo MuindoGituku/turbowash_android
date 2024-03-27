@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.colorResource
@@ -75,11 +76,13 @@ fun CustomUserProfileCard (
             modifier = Modifier
                 .padding(innerPaddingValues)
         ) {
+
             Image(
                 painter = imagePainter,
                 contentDescription = "User profile image",
                 modifier = Modifier
                     .size(width = imageWidth, height = imageHeight)
+                    .clip(CircleShape)
             )
             Column(
                 modifier = Modifier.padding(start = 10.dp),

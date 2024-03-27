@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomSettingsTile
 import com.ed.turbowash_android.customwidgets.CustomUserProfileCard
@@ -31,6 +33,7 @@ import com.ed.turbowash_android.models.Screen
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun MainSettingsScreen(
     onLogOutCustomer: () -> Unit,
@@ -72,10 +75,19 @@ fun MainSettingsScreen(
                 }
 
                 customer.value != null -> {
+                    val painter = rememberImagePainter(
+                        data = customer.value!!.personalData.profileImage,
+                        builder = {
+                            crossfade(true)
+                            placeholder(drawableResId = R.drawable.user_png)
+                            error(R.drawable.user_png)
+                        }
+                    )
                     LazyColumn() {
                         item {
                             CustomUserProfileCard(
                                 onProfileCardClick = { },
+                                imagePainter = painter,
                                 fullNames = customer.value!!.personalData.fullNames,
                                 emailAddress = customer.value!!.personalData.emailAddress.ifEmpty { "(hidden email address)" },
                                 phoneNumber = customer.value!!.personalData.phoneNumber,

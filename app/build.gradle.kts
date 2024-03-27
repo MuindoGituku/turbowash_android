@@ -45,7 +45,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -85,8 +85,16 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Accompanist
-    implementation("com.google.accompanist:accompanist-pager:0.35.0-alpha")
-    implementation("com.google.accompanist:accompanist-pager-indicators:0.35.0-alpha")
+    implementation("com.google.accompanist:accompanist-pager:0.35.0-alpha") {
+        exclude(group = "androidx.appcompat", module = "appcompat")
+    }
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.35.0-alpha") {
+        exclude(group = "androidx.appcompat", module = "appcompat")
+    }
+    implementation("com.google.accompanist:accompanist-coil:0.15.0") {
+        exclude(group = "androidx.appcompat", module = "appcompat")
+        exclude(group = "androidx.appcompat", module = "appcompat-resources")
+    }
 
     // LiveData
     implementation("androidx.compose.runtime:runtime-livedata")

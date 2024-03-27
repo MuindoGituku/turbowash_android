@@ -201,6 +201,18 @@ fun NavGraphBuilder.managePersonalDataGraph(
     }
 }
 
+fun NavGraphBuilder.bookingStepsGraph(
+    navController: NavController,
+    customerProfileViewModel: CustomerProfileViewModel
+){
+    composable(Screen.BookingDetailsConfirmation.route) {
+
+    }
+    composable(Screen.BookingDetailsConfirmation.route) {
+
+    }
+}
+
 
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {

@@ -27,6 +27,8 @@ sealed class Screen(val route: String, val screenTitle:String, @DrawableRes val 
     }
     data object ViewCustomerProfile : Screen("view_profile", "View Profile")
     data object UpdateCustomerProfile : Screen("update_profile", "Update Profile")
+    data object BookingDetailsConfirmation : Screen("booking_steps","Confirm Booking Details")
+    data object BookingProvidersListBrowse : Screen("available_providers", "Browse Available Providers")
 }
 
 val screensList = listOf(

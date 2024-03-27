@@ -287,7 +287,7 @@ class CustomerProfileRepository(private val generalDatabaseActionsRepo: GeneralD
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RepositoryModule {
+object CustomerRepositoryModule {
 
     @Provides
     @Singleton
