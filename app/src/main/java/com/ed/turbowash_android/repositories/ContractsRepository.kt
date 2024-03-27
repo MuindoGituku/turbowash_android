@@ -10,7 +10,6 @@ import com.ed.turbowash_android.models.Message
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
 import com.ed.turbowash_android.models.SavedVehicle
-import com.ed.turbowash_android.models.Schedule
 import com.ed.turbowash_android.models.Service
 import com.ed.turbowash_android.models.ServiceProvider
 import com.google.firebase.Timestamp
