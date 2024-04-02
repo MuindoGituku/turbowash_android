@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,6 +30,10 @@ class CustomerProfileRepository(private val generalDatabaseActionsRepo: GeneralD
 
     private val auth: FirebaseAuth by lazy {
         FirebaseAuth.getInstance()
+    }
+
+    private val messaging: FirebaseMessaging by lazy {
+        FirebaseMessaging.getInstance()
     }
 
     private fun getCurrentUser(): FirebaseUser =
@@ -62,9 +67,16 @@ class CustomerProfileRepository(private val generalDatabaseActionsRepo: GeneralD
 
     suspend fun getCustomerProfile(): Customer = executeWithExceptionHandling {
         val user = getCurrentUser()
+        val currentToken = messaging.token.await()
+
         val snapshot = db.collection("customers").document(user.uid).get().await()
         snapshot.toObject(Customer::class.java)?.apply {
             id = snapshot.id
+            if (fcmToken != currentToken){
+                fcmToken = currentToken
+
+                db.collection("customers").document(user.uid).update(mapOf("fcm_token" to currentToken)).await()
+            }
         } ?: throw DataIntegrityException("Profile not found")
     }
 
@@ -83,6 +95,7 @@ class CustomerProfileRepository(private val generalDatabaseActionsRepo: GeneralD
         latitude: Double
     ): Customer = executeWithExceptionHandling {
         val user = getCurrentUser()
+        val currentToken = messaging.token.await()
 
         var profileImageLink = ""
 
@@ -122,7 +135,8 @@ class CustomerProfileRepository(private val generalDatabaseActionsRepo: GeneralD
             savedAddresses = mutableListOf(savedAddress),
             savedVehicles = mutableListOf(),
             favoriteHires = mutableListOf(),
-            dateJoined = Timestamp.now()
+            dateJoined = Timestamp.now(),
+            fcmToken = currentToken
         )
 
         db.collection("customers").document(user.uid).set(customer).await()

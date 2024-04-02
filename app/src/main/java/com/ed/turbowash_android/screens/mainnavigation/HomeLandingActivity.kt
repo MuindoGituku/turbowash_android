@@ -37,6 +37,7 @@ import coil.compose.rememberImagePainter
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CarWashTypeItemView
 import com.ed.turbowash_android.customwidgets.CustomIconTextField
+import com.ed.turbowash_android.models.Service
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 import com.ed.turbowash_android.viewmodels.TurboServicesViewModel
 
@@ -44,7 +45,8 @@ import com.ed.turbowash_android.viewmodels.TurboServicesViewModel
 @Composable
 fun HomeLandingScreen(
     customerProfileViewModel: CustomerProfileViewModel,
-    navController: NavController
+    navController: NavController,
+    onClickedServiceCard: (Service) -> Unit
 ) {
     val loadingProfile = customerProfileViewModel.loading.collectAsState()
     val customer = customerProfileViewModel.customerProfile.collectAsState()
@@ -62,7 +64,7 @@ fun HomeLandingScreen(
         turboServicesViewModel.getAllTurboServices()
     }
 
-    Scaffold() { paddingValues ->
+    Scaffold { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
@@ -191,7 +193,7 @@ fun HomeLandingScreen(
                                 CarWashTypeItemView(
                                     carWash = service,
                                     onClickService = {
-
+                                        onClickedServiceCard(it)
                                     }
                                 )
                             }
