@@ -41,6 +41,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -71,6 +72,8 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-auth:21.0.0")
     implementation("com.google.android.libraries.places:places:3.4.0")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.maps.android:maps-ktx:5.0.0")
 
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.test:core-ktx:1.5.0")
@@ -78,6 +81,8 @@ dependencies {
     // Hilt dependencies
     implementation("com.google.dagger:hilt-android:2.51.1")
     implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     kapt("com.google.dagger:hilt-compiler:2.51.1")
 
     // Testing dependencies
@@ -101,4 +106,7 @@ dependencies {
 
     // LiveData
     implementation("androidx.compose.runtime:runtime-livedata")
+
+    //Lottie animations
+    implementation("com.airbnb.android:lottie-compose:6.4.0")
 }

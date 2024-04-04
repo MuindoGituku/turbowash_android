@@ -65,7 +65,7 @@ class CustomerProfileViewModel @Inject constructor(private val customerProfileRe
         }
     }
 
-    private fun refreshCustomerProfile() = launchDataOperation {
+    fun refreshCustomerProfile() = launchDataOperation {
         _customerProfile.value = customerProfileRepo.getCustomerProfile()
     }
 
@@ -115,5 +115,13 @@ class CustomerProfileViewModel @Inject constructor(private val customerProfileRe
 
     fun deletePaymentCard(selectedCardTag: String) = launchDataOperation {
         customerProfileRepo.deleteCustomerPaymentCard(selectedCardTag).also { _customerProfile.value = it }
+    }
+
+    fun removeProviderFromFavorites(providerID: String) = launchDataOperation {
+        customerProfileRepo.removeProviderFromFavorites(providerID).also { _customerProfile.value = it }
+    }
+
+    fun addProviderToFavorites(providerID: String) = launchDataOperation {
+        customerProfileRepo.addProviderToFavorites(providerID).also { _customerProfile.value = it }
     }
 }

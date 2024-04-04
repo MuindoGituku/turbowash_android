@@ -2,7 +2,9 @@ package com.ed.turbowash_android.screens.profilemanagement.profileupdates.saveda
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.TopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,6 +30,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomIconTextField
+import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 import com.ed.turbowash_android.viewmodels.LocationSearchViewModel
@@ -41,11 +46,13 @@ import com.ed.turbowash_android.viewmodels.LocationSearchViewModel
 @Composable
 fun AddSavedAddressScreen(
     customerProfileViewModel: CustomerProfileViewModel,
-    navController: NavController
+    onClickBackArrow: () -> Unit,
+    onUploadAddressSuccessfully: () -> Unit,
 ) {
-    val loadingProfile = customerProfileViewModel.loading.collectAsState()
-    val customer = customerProfileViewModel.customerProfile.collectAsState()
-    val error = customerProfileViewModel.error.collectAsState()
+    val loadingProfile = customerProfileViewModel.loading.collectAsState().value
+    val customer = customerProfileViewModel.customerProfile.collectAsState().value!!
+    val existingAddresses = customer.savedAddresses
+    val error = customerProfileViewModel.error.collectAsState().value
 
     val configuration = LocalConfiguration.current
     val context = LocalContext.current
@@ -101,17 +108,43 @@ fun AddSavedAddressScreen(
         }
     }
 
-    Scaffold {
+    Scaffold (
+        topBar = {
+            TopAppBar(
+                backgroundColor = Color.Unspecified,
+                elevation = 0.dp,
+                contentPadding = PaddingValues(
+                    start = 15.dp,
+                    end = 15.dp,
+                    bottom = 10.dp,
+                    top = 20.dp
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(modifier = Modifier.clickable { onClickBackArrow() }) {
+                    CustomPaddedIcon(
+                        icon = R.drawable.chev_left,
+                        backgroundPadding = 5
+                    )
+                }
+                Text(
+                    text = "Add New Address",
+                    style = TextStyle(
+                        fontWeight = FontWeight.W700,
+                        fontSize = 27.sp
+                    ),
+                    modifier = Modifier.padding(
+                        start = 10.dp,
+                        end = 15.dp
+                    )
+                )
+            }
+        },
+    ) {
         LazyColumn (
             modifier = Modifier.padding(it)
         ){
             item {
-                Text(
-                    text = "Primary Address",
-                    fontWeight = FontWeight.Black,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(10.dp)
-                )
                 CustomIconTextField(
                     fieldValue = addressTag,
                     fieldLabel = "Address Tag",

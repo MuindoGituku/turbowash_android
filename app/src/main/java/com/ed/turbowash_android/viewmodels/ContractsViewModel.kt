@@ -76,6 +76,10 @@ class ContractsViewModel @Inject constructor(private val contractsRepository: Co
         contractsRepository.getContractsListUnderProfile().also { _contractsList.value = it }
     }
 
+    fun getIndividualContractInfo(contractID: String) = launchDataOperation {
+        contractsRepository.getIndividualContractInfo(contractID).also { _contractInView.value = it }
+    }
+
     fun sendChatMessageToContract(contractID: String, message: String) = launchDataOperation {
         contractsRepository.sendChatMessageToContract(contractID, message).also { _contractInView.value = it }
     }

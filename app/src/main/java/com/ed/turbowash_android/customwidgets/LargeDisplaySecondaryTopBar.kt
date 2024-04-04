@@ -37,8 +37,8 @@ fun LargeDisplaySecondaryTopBar(
         Text(
             text = pageTitle,
             style = TextStyle(
-                fontWeight = FontWeight.W400,
-                fontSize = 25.sp
+                fontWeight = FontWeight.W700,
+                fontSize = 27.sp
             ),
             modifier = Modifier.padding(
                 start = 10.dp,

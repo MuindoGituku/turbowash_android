@@ -76,6 +76,10 @@ class ProviderProfileViewModel @Inject constructor(private val providerProfileRe
         providerProfileRepo.getIndividualProviderSchedule(userID).also { _providersScheduleList.value = it }
     }
 
+    fun getPreviousHiredWashersList() = launchDataOperation {
+        providerProfileRepo.getPreviousHiredWashersList().also { _providersList.value = it }
+    }
+
     fun getGeneralListOfProvidersFromIDs(providerIDs: MutableList<String>) = launchDataOperation {
         providerProfileRepo.getGeneralListOfProvidersFromIDs(providerIDs).also { _providersList.value = it }
     }

@@ -29,6 +29,22 @@ sealed class Screen(val route: String, val screenTitle:String, @DrawableRes val 
     data object UpdateCustomerProfile : Screen("update_profile", "Update Profile")
     data object BookingDetailsConfirmation : Screen("booking_steps","Confirm Booking Details")
     data object BookingProvidersListBrowse : Screen("available_providers", "Browse Available Providers")
+
+    data object ViewContractDetails : Screen("contracts/{contractID}/details", "Contract Details") {
+        fun createRoute(contract: String) = "contracts/${contract}/details"
+    }
+
+    data object ViewContractChatMessages : Screen("contracts/{contractID}/chat", "Contract Chats") {
+        fun createRoute(contract: String) = "contracts/${contract}/chat"
+    }
+
+    data object ViewContractMapNavigation : Screen("contracts/{contractID}/map", "Contract Maps") {
+        fun createRoute(contract: String) = "contracts/${contract}/map"
+    }
+
+    data object ViewProviderDetails : Screen("providers/{providerID}", "Provider Details") {
+        fun createRoute(provider: String) = "providers/${provider}/details"
+    }
 }
 
 val screensList = listOf(

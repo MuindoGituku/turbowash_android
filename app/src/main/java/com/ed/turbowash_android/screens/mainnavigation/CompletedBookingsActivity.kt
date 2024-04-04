@@ -21,95 +21,82 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomContractCard1
+import com.ed.turbowash_android.customwidgets.ErrorAnimatedScreenWithTryAgain
+import com.ed.turbowash_android.customwidgets.FullScreenLottieAnimWithText
 import com.ed.turbowash_android.viewmodels.ContractsViewModel
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 
 @Composable
 fun CompletedBookingsActivity(
-    customerProfileViewModel: CustomerProfileViewModel,
-    navController: NavController
-){
-    val loadingProfile = customerProfileViewModel.loading.collectAsState()
-    val customer = customerProfileViewModel.customerProfile.collectAsState()
-    val error = customerProfileViewModel.error.collectAsState()
-
+    onClickedContractCard: (String) -> Unit,
+) {
     val contractsViewModel: ContractsViewModel = hiltViewModel()
     val contractsLoading = contractsViewModel.loading.collectAsState()
     val contracts = contractsViewModel.contractsList.collectAsState()
     val contractsError = contractsViewModel.error.collectAsState()
 
-    LaunchedEffect(key1 = contractsViewModel) {
+    LaunchedEffect(key1 = Unit) {
         contractsViewModel.getContractsListUnderProfile()
     }
 
-    Scaffold () { paddingValues ->
-        LazyColumn (
+    Scaffold() { paddingValues ->
+        LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
-        ){
+        ) {
             when {
-                loadingProfile.value -> {
+                contractsLoading.value -> {
                     item {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            CircularProgressIndicator(
-                                color = colorResource(id = R.color.turboBlue),
-                                strokeWidth = 5.dp
-                            )
-                        }
+                        FullScreenLottieAnimWithText(
+                            lottieResource = R.raw.loading,
+                            loadingAnimationText = "Fetching booked contracts under your profile. Please wait...",
+                        )
                     }
                 }
 
-                !error.value.isNullOrBlank() -> {
-                    item { Text(text = error.value!!, color = Color.Red) }
+                !contractsError.value.isNullOrBlank() -> {
+                    item {
+                        ErrorAnimatedScreenWithTryAgain(
+                            lottieResource = R.raw.doc_error,
+                            errorText = "$contractsError. Click the button below to retry.",
+                            retryAction = { contractsViewModel.getContractsListUnderProfile() },
+                            retryButtonText = "Try Again"
+                        )
+                    }
                 }
 
-                customer.value != null -> {
-                    when {
-                        contractsLoading.value -> {
-                            item {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    CircularProgressIndicator(
-                                        color = colorResource(id = R.color.turboBlue),
-                                        strokeWidth = 5.dp
-                                    )
+                contracts.value.isEmpty() -> {
+                    item {
+                        FullScreenLottieAnimWithText(
+                            lottieResource = R.raw.empty_list,
+                            loadingAnimationText = "You have no past or completed contracts under your profile. Closed contracts will appear here.",
+                        )
+                    }
+                }
+
+                contracts.value.isNotEmpty() -> {
+                    val completedContracts = contracts.value.filter { contract ->
+                        contract.contractStatus.briefMessage != "Proposed" && contract.contractStatus.briefMessage != "Confirmed"
+                    }
+
+                    if (completedContracts.isEmpty()) {
+                        item {
+                            FullScreenLottieAnimWithText(
+                                lottieResource = R.raw.empty_list,
+                                loadingAnimationText = "You have no past or completed contracts under your profile. Closed contracts will appear here.",
+                            )
+                        }
+                    } else {
+                        items(completedContracts, key = { it.id }) { contract ->
+                            CustomContractCard1(
+                                contract = contract,
+                                onClickContract = {
+                                    onClickedContractCard(contract.id)
                                 }
-                            }
-                        }
-
-                        !contractsError.value.isNullOrBlank() -> {
-                            item { Text(text = error.value!!, color = Color.Red) }
-                        }
-
-                        contracts.value.isEmpty() && !contractsLoading.value && contractsError.value.isNullOrBlank() -> {
-                            item {
-                                Text(
-                                    text = "No completed contracts found under your profile!",
-                                    color = Color.Black
-                                )
-                            }
-                        }
-
-                        contracts.value.isNotEmpty() && !contractsLoading.value && contractsError.value.isNullOrBlank() -> {
-                            val completedContracts = contracts.value.filter { contract ->
-                                contract.contractStatus.briefMessage == "Cancelled" || contract.contractStatus.briefMessage == "Completed"
-                            }
-                            items(completedContracts, key = { it.id }) { contract ->
-                                CustomContractCard1(
-                                    contract = contract,
-                                    onClickContract = {
-
-                                    }
-                                )
-                            }
+                            )
                         }
                     }
                 }

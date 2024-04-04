@@ -91,6 +91,17 @@ class MainViewModel @Inject constructor(private val preferencesRepository: Prefe
         }
     }
 
+    fun onContractUploadSuccessfully() {
+        _navigationRoute.value = "booking_success"
+    }
+
+    fun onNavigateBackHome() {
+        viewModelScope.launch {
+            _navigationRoute.value = "splash"
+            determineNextScreen()
+        }
+    }
+
     private suspend fun determineNextScreen() {
         when {
             !checkIfUserIsAuthenticated() -> _navigationRoute.value = "auth"

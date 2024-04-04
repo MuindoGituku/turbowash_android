@@ -46,6 +46,9 @@ fun CustomIconTextField(
     hasValidationError: MutableState<Boolean>? = null,
     hasInputValidation: Boolean = true,
     validationErrorText: String? = null,
+    singleLine: Boolean = true,
+    maxLines: Int = 5,
+    minLines: Int = 1,
     textInputAutoCap: KeyboardCapitalization = KeyboardCapitalization.Words,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -77,7 +80,9 @@ fun CustomIconTextField(
                     )
                 }
             } else null,
-            singleLine = true,
+            singleLine = singleLine,
+            maxLines = maxLines,
+            minLines = minLines,
             modifier = modifier,
             keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType,

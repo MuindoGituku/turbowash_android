@@ -297,6 +297,46 @@ class CustomerProfileRepository(private val generalDatabaseActionsRepo: GeneralD
             }.await()
             getCustomerProfile()
         }
+
+    suspend fun removeProviderFromFavorites(providerID: String): Customer =
+        executeWithExceptionHandling {
+            val user = getCurrentUser()
+
+            val customerDocRef = db.collection("customers").document(user.uid)
+
+            db.runTransaction { transaction ->
+                val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                    ?: throw IllegalStateException("Customer not found")
+
+                customer.favoriteHires.removeIf { it == providerID }
+                transaction.update(
+                    customerDocRef,
+                    "favorite_hires",
+                    customer.favoriteHires
+                )
+            }.await()
+            getCustomerProfile()
+        }
+
+    suspend fun addProviderToFavorites(providerID: String): Customer =
+        executeWithExceptionHandling {
+            val user = getCurrentUser()
+
+            val customerDocRef = db.collection("customers").document(user.uid)
+
+            db.runTransaction { transaction ->
+                val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                    ?: throw IllegalStateException("Customer not found")
+
+                customer.favoriteHires.add(providerID)
+                transaction.update(
+                    customerDocRef,
+                    "favorite_hires",
+                    customer.favoriteHires
+                )
+            }.await()
+            getCustomerProfile()
+        }
 }
 
 @Module

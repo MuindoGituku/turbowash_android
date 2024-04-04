@@ -1,9 +1,11 @@
 package com.ed.turbowash_android.customwidgets
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
@@ -17,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
@@ -30,7 +33,27 @@ import java.util.Locale
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun CustomContractCard1(contract: Contract, onClickContract: (contract: Contract) -> Unit) {
-    Column(
+
+    @Composable
+    fun getBackgroundColor(status: String): Color {
+        return when (status) {
+            "Proposed" -> Color.Blue
+            "Confirmed" -> Color.Green
+            "Completed" -> colorResource(id = R.color.turboBlue)
+            "Billed" -> Color.Yellow
+            "Cancelled" -> Color.Red
+            "Rejected" -> Color.Magenta
+            else -> Color.Black
+        }
+    }
+
+    fun formatTimestamp(timestamp: Timestamp): String {
+        val sdf = SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
+        val date = timestamp.toDate()
+        return sdf.format(date)
+    }
+
+    Column (
         modifier = Modifier
             .padding(10.dp)
             .fillMaxWidth()
@@ -40,22 +63,34 @@ fun CustomContractCard1(contract: Contract, onClickContract: (contract: Contract
                 onClickContract(contract)
             }
     ) {
-        fun formatTimestamp(timestamp: Timestamp): String {
-            val sdf = SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
-            val date = timestamp.toDate()
-            return sdf.format(date)
-        }
-
         Column(
             modifier = Modifier.padding(start = 5.dp, end = 5.dp, bottom = 10.dp, top = 5.dp)
         ) {
-            Text(
-                text = contract.contractTitle.split("at").first().trim(),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.Black,
-                modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp)
-            )
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = contract.contractTitle.split("at").first().trim(),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp)
+                )
+                Text(
+                    text = contract.contractStatus.briefMessage.uppercase(Locale.ROOT),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
+                    color = Color.White,
+                    modifier = Modifier
+                        .background(
+                            color = getBackgroundColor(contract.contractStatus.briefMessage),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
+                        .padding(10.dp)
+                )
+            }
             Divider(
                 modifier = Modifier.padding(vertical = 5.dp)
             )

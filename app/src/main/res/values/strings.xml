@@ -23,4 +23,5 @@ Aliquam molestie iaculis tortor, eget aliquam magna vestibulum vel. Sed sit amet
 
 Sed iaculis venenatis erat quis pellentesque. Morbi sagittis quam ut pharetra lobortis. Fusce faucibus mattis dolor nec rhoncus. Sed sollicitudin diam vel ipsum dapibus euismod. Sed non mi vel lectus tempus rhoncus. Suspendisse potenti. Sed ut mi sit amet nulla vehicula mollis. Suspendisse iaculis justo elit. Morbi vulputate semper tristique.
     </string>
+    <string name="title_activity_maps">MapsActivity</string>
 </resources>

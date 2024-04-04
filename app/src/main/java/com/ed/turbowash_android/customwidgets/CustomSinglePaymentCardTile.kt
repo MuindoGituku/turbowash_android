@@ -31,8 +31,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun CustomSinglePaymentCardTile(
     card: PaymentCard,
-    onTapUpdate: () -> Void,
-    onTapDelete: () -> Void,
+    onTapUpdate: () -> Unit,
+    onTapDelete: () -> Unit,
     outerPaddingValues: PaddingValues = PaddingValues(10.dp),
     innerPaddingValues: PaddingValues = PaddingValues(10.dp)
 ){

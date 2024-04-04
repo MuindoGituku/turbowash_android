@@ -30,7 +30,7 @@ import com.ed.turbowash_android.R
 fun CarWashTypeItemView(carWash: Service, onClickService: (carWash: Service) -> Unit) {
     Column(
         modifier = Modifier
-            .padding(bottom = 20.dp, start = 10.dp, end = 10.dp)
+            .padding(bottom = 20.dp, start = 15.dp, end = 15.dp)
             .fillMaxWidth()
             .clickable {
                 onClickService(carWash)

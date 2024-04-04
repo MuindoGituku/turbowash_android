@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ed.turbowash_android.screens.ContractBookingSuccessActivity
 import com.ed.turbowash_android.screens.RootHomeNavigation
 import com.ed.turbowash_android.screens.WelcomeWalkThrough
 import com.ed.turbowash_android.screens.auth.AuthActivityScreenView
@@ -84,7 +85,8 @@ class MainActivity : ComponentActivity() {
                                     userAuthViewModel,
                                     onAuthCompletedSuccessfully = {
                                         mainViewModel.onAuthCompletedSuccessfully()
-                                    })
+                                    },
+                                )
                             }
                             composable("profile") {
                                 ProfileSetupScreen {
@@ -92,13 +94,23 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             composable("home") {
-                                RootHomeNavigation {
-                                    userAuthViewModel.logoutAuthenticatedUser().also {
-                                        mainViewModel.onCustomerLogOutSuccessfully()
+                                RootHomeNavigation(
+                                    onLogOutCustomer = {
+                                        userAuthViewModel.logoutAuthenticatedUser().also {
+                                            mainViewModel.onCustomerLogOutSuccessfully()
+                                        }
+                                    },
+                                    onContractUploadSuccess = {
+                                        mainViewModel.onContractUploadSuccessfully()
                                     }
+                                )
+                            }
+                            composable("booking_success") {
+                                ContractBookingSuccessActivity {
+                                    mainViewModel.onNavigateBackHome()
                                 }
                             }
-                            composable("invalid"){
+                            composable("invalid") {
                                 InvalidCredentialsActivity(viewModel = userAuthViewModel) {
                                     mainViewModel.onAuthCompletedSuccessfully()
                                 }

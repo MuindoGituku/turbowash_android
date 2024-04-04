@@ -40,3 +40,8 @@ data class Service(
     @get:PropertyName("thumbnail_url") @set:PropertyName("thumbnail_url") var thumbnailUrl: String = "",
     @get:PropertyName("recommended_price") @set:PropertyName("recommended_price") var recommendedPrice: Double = 0.0,
 )
+
+data class City(
+    @get:PropertyName("name") @set:PropertyName("name") var city: String = "",
+    @get:PropertyName("province") @set:PropertyName("province") var province: String = "",
+)

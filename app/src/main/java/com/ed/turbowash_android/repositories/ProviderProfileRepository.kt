@@ -1,6 +1,7 @@
 package com.ed.turbowash_android.repositories
 
 import com.ed.turbowash_android.exceptions.*
+import com.ed.turbowash_android.models.Contract
 import com.ed.turbowash_android.models.Schedule
 import com.ed.turbowash_android.models.ServiceProvider
 import com.google.firebase.Timestamp
@@ -118,6 +119,35 @@ class ProviderProfileRepository() {
         val providersList = getGeneralListOfProvidersFromIDs(providerIDsList)
 
         providersList
+    }
+
+    suspend fun getPreviousHiredWashersList(): MutableList<ServiceProvider> = executeWithExceptionHandling {
+        val user = getCurrentUser()
+
+        val collQuery = db.collection("contracts")
+            .whereEqualTo("customer.profile_id", user.uid)
+            .get().await()
+
+        val contractsList = mutableListOf<Contract>()
+        if (collQuery.isEmpty) {
+            mutableListOf()
+        } else {
+            for (document in collQuery.documents) {
+                val contract = document.toObject(Contract::class.java)
+                contract?.let {
+                    it.id = document.id
+                    contractsList.add(it)
+                }
+            }
+            val previousWashersIDsList = mutableListOf<String>()
+            contractsList.forEach { contract ->
+                previousWashersIDsList.add(contract.provider.profileID)
+            }
+
+            val providersList = getGeneralListOfProvidersFromIDs(previousWashersIDsList)
+
+            providersList
+        }
     }
 }
 

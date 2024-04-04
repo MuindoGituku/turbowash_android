@@ -26,7 +26,6 @@ fun MaxWidthButton(
     buttonAction: () -> Unit,
     backgroundColor: Color = colorResource(id = R.color.turboBlue),
     customTextColor: Color = Color.Black,
-    hasCustomImageColor:Boolean = false,
     customImageColor: Color = colorResource(id = R.color.fadedGray),
     customImageName: Int? = null,
     modifier: Modifier = Modifier,
@@ -47,7 +46,7 @@ fun MaxWidthButton(
                     modifier = Modifier
                         .height(24.dp)
                         .padding(end = 10.dp),
-                    colorFilter = if (hasCustomImageColor) ColorFilter.tint(customImageColor) else null
+                    colorFilter = ColorFilter.tint(customImageColor)
                 )
             }
             Text(

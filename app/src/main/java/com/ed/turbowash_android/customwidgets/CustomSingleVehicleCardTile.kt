@@ -27,8 +27,8 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 @Composable
 fun CustomSingleVehicleTile(
     vehicle: SavedVehicle,
-    onTapUpdate: () -> Void,
-    onTapDelete: () -> Void,
+    onTapUpdate: () -> Unit,
+    onTapDelete: () -> Unit,
     outerPaddingValues: PaddingValues = PaddingValues(10.dp),
     innerPaddingValues: PaddingValues = PaddingValues(10.dp)
     ){
