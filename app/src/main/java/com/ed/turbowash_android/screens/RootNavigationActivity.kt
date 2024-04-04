@@ -34,6 +34,7 @@ import com.ed.turbowash_android.models.screensList
 import com.ed.turbowash_android.models.Screen
 import com.ed.turbowash_android.screens.bookingsteps.walkfromhome.AvailableProvidersBrowseActivity
 import com.ed.turbowash_android.screens.bookingsteps.walkfromhome.BookingDetailsConfirmation
+import com.ed.turbowash_android.screens.detailsscreens.ContractDetailsChatScreen
 import com.ed.turbowash_android.screens.detailsscreens.SingleContractDetailsScreen
 import com.ed.turbowash_android.screens.mainnavigation.FavoriteHiresScreen
 import com.ed.turbowash_android.screens.mainnavigation.HomeLandingScreen
@@ -115,11 +116,29 @@ fun RootHomeNavigation(onLogOutCustomer: () -> Unit, onContractUploadSuccess: ()
                     SingleContractDetailsScreen(
                         contractID = contractInViewID,
                         onClickBackArrow = { navController.popBackStack() },
-                        onClickChatsButton = { /*TODO*/ },
+                        onClickChatsButton = {
+                            navController.navigate(
+                                Screen.ViewContractChatMessages.createRoute(
+                                    contractInViewID
+                                )
+                            )
+                        },
                         onClickMapButton = { /*TODO*/ },
                         onClickProviderInfoButton = {
                             sharedInstancesViewModel.updateSelectedProviderID(it)
                         }
+                    )
+                }
+
+                composable(Screen.ViewContractChatMessages.route) { navBackStackEntry ->
+                    val sharedInstancesViewModel =
+                        navBackStackEntry.sharedViewModel<SharedInstancesViewModel>(navController = navController)
+                    val contractInViewID =
+                        sharedInstancesViewModel.selectedContractID.collectAsState().value
+
+                    ContractDetailsChatScreen(
+                        contractID = contractInViewID,
+                        onClickBackArrow = { navController.popBackStack() },
                     )
                 }
 

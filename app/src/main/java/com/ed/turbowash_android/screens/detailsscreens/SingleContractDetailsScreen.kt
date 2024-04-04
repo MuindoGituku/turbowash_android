@@ -89,11 +89,6 @@ fun SingleContractDetailsScreen(
         return sdf.format(date)
     }
 
-    val density = LocalDensity.current
-    fun Dp.toPx(): Int {
-        return (this.value * density.density).toInt()
-    }
-
     Scaffold(
         bottomBar = {
             NavigationBar(
