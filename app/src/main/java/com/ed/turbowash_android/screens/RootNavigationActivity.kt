@@ -169,6 +169,15 @@ fun RootHomeNavigation(onLogOutCustomer: () -> Unit, onContractUploadSuccess: ()
                         },
                         onClickProceedButton = {
                             navController.navigate(Screen.BookingProvidersListBrowse.route)
+                        },
+                        onClickAddNewCard = {
+                            navController.navigate(Screen.AddPaymentCard.route)
+                        },
+                        onClickAddNewVehicle = {
+                            navController.navigate(Screen.AddSavedVehicle.route)
+                        },
+                        onClickAddNewAddress = {
+                            navController.navigate(Screen.AddSavedAddress.route)
                         }
                     )
                 }

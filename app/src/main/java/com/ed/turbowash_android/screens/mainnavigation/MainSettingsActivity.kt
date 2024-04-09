@@ -1,5 +1,6 @@
 package com.ed.turbowash_android.screens.mainnavigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -175,7 +178,11 @@ fun MainSettingsScreen(
                             backgroundColor = Color.Red,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(15.dp)
+                                .padding(horizontal = 15.dp, vertical = 10.dp)
+                                .background(
+                                    color = Color.Red,
+                                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                                )
                         )
                     }
                 }

@@ -3,6 +3,8 @@ package com.ed.turbowash_android.screens.bookingsteps.walkfromhome
 import android.app.DatePickerDialog
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -60,7 +64,10 @@ fun BookingDetailsConfirmation(
     customer: Customer,
     sharedInstancesViewModel: SharedInstancesViewModel,
     onClickBackArrow: () -> Unit,
-    onClickProceedButton: () -> Unit
+    onClickProceedButton: () -> Unit,
+    onClickAddNewAddress: () -> Unit,
+    onClickAddNewVehicle: () -> Unit,
+    onClickAddNewCard: () -> Unit,
 ) {
     val modalBottomSheetState =
         androidx.compose.material.rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
@@ -69,9 +76,9 @@ fun BookingDetailsConfirmation(
     var currentDisplaySheet by remember { mutableStateOf(BookingDetailsSheets.ShowDateTimePickerSheet) }
 
     val selectedWashDate = sharedInstancesViewModel.selectedWashDate.collectAsState().value
-    val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+    val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' hh:mm a")
     val selectedWashDateText = remember(selectedWashDate) {
-        mutableStateOf("Selected ${selectedWashDate.format(dateFormatter)}")
+        mutableStateOf("Selected: ${selectedWashDate.format(dateFormatter)}")
     }
 
     val selectedService = sharedInstancesViewModel.selectedService.collectAsState().value!!
@@ -115,17 +122,41 @@ fun BookingDetailsConfirmation(
 
                 }
 
-                BookingDetailsSheets.ShowVehiclePickerSheet -> WashVehiclePickerSheet(vehiclesList = customer.savedVehicles) {
+                BookingDetailsSheets.ShowVehiclePickerSheet -> WashVehiclePickerSheet(
+                    vehiclesList = customer.savedVehicles,
+                    onVehicleConfirmed = {
+                        sharedInstancesViewModel.updateSelectedVehicle(it)
+                        coroutineScope.launch{ modalBottomSheetState.hide() }
+                    },
+                    onClickAddNewVehicle = {
+                        coroutineScope.launch{ modalBottomSheetState.hide() }
+                        onClickAddNewVehicle()
+                    }
+                )
 
-                }
+                BookingDetailsSheets.ShowAddressPickerSheet -> WashAddressPickerSheet(
+                    addressesList = customer.savedAddresses,
+                    onAddressConfirmed = {
+                        sharedInstancesViewModel.updateSelectedAddress(it)
+                        coroutineScope.launch{ modalBottomSheetState.hide() }
+                    },
+                    onClickAddNewAddress = {
+                        coroutineScope.launch{ modalBottomSheetState.hide() }
+                        onClickAddNewAddress()
+                    }
+                )
 
-                BookingDetailsSheets.ShowAddressPickerSheet -> WashAddressPickerSheet(addressesList = customer.savedAddresses) {
-
-                }
-
-                BookingDetailsSheets.ShowCardPickerSheet -> WashBillCardPickerSheet(cardsList = customer.savedPaymentCards) {
-
-                }
+                BookingDetailsSheets.ShowCardPickerSheet -> WashBillCardPickerSheet(
+                    cardsList = customer.savedPaymentCards,
+                    onCardConfirmed = {
+                        sharedInstancesViewModel.updateSelectedPaymentCard(it)
+                        coroutineScope.launch{ modalBottomSheetState.hide() }
+                    },
+                    onClickAddNewCard = {
+                        coroutineScope.launch{ modalBottomSheetState.hide() }
+                        onClickAddNewCard()
+                    }
+                )
             }
         }
     ) {
@@ -210,7 +241,11 @@ fun BookingDetailsConfirmation(
                             )
                             Text(
                                 text = selectedWashDateText.value,
-                                style = TextStyle(),
+                                style = TextStyle(
+                                    color = Color.Gray,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.W400,
+                                ),
                             )
                         }
                         TextButton(
@@ -245,8 +280,14 @@ fun BookingDetailsConfirmation(
                         CustomPaddedIcon(
                             icon = R.drawable.car_filled,
                             backgroundPadding = 7,
-                            iconColor = if (selectedVehicleValidationError.value) Color.Red else if (selectedVehicle != null) colorResource(id = R.color.fadedGray) else colorResource(id = R.color.turboBlue),
-                            backgroundColor = if (selectedVehicleValidationError.value) colorResource(id = R.color.fadedGray) else if (selectedVehicle != null) colorResource(id = R.color.turboBlue) else colorResource(id = R.color.fadedGray),
+                            iconColor = if (selectedVehicleValidationError.value) Color.Red else if (selectedVehicle != null) colorResource(
+                                id = R.color.fadedGray
+                            ) else colorResource(id = R.color.turboBlue),
+                            backgroundColor = if (selectedVehicleValidationError.value) colorResource(
+                                id = R.color.fadedGray
+                            ) else if (selectedVehicle != null) colorResource(id = R.color.turboBlue) else colorResource(
+                                id = R.color.fadedGray
+                            ),
                         )
                         Column(
                             modifier = Modifier
@@ -260,10 +301,10 @@ fun BookingDetailsConfirmation(
                                 ), modifier = Modifier.padding(bottom = 5.dp)
                             )
                             Text(
-                                text = if (selectedVehicleValidationError.value) "Please select a vehicle to be scheduled for cleaning in order to proceed!" else if (selectedVehicle != null) "Selected Vehicle: ${selectedVehicle.tag} - ${selectedVehicle.regNo}" else "Tap to select a vehicle to schedule for cleaning...",
+                                text = if (selectedVehicleValidationError.value) "Please select a vehicle to be scheduled for cleaning in order to proceed!" else if (selectedVehicle != null) "Selected: ${selectedVehicle.tag} - ${selectedVehicle.regNo}" else "Tap to select a vehicle to schedule for cleaning...",
                                 style = TextStyle(
                                     color = if (selectedVehicleValidationError.value) Color.Red else Color.Gray,
-                                    fontSize = 14.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.W400,
                                 ),
                             )
@@ -301,8 +342,14 @@ fun BookingDetailsConfirmation(
                         CustomPaddedIcon(
                             icon = R.drawable.loc_pin_filled,
                             backgroundPadding = 7,
-                            iconColor = if (selectedAddressValidationError.value) Color.Red else if (selectedAddress != null) colorResource(id = R.color.fadedGray) else colorResource(id = R.color.turboBlue),
-                            backgroundColor = if (selectedAddressValidationError.value) colorResource(id = R.color.fadedGray) else if (selectedAddress != null) colorResource(id = R.color.turboBlue) else colorResource(id = R.color.fadedGray),
+                            iconColor = if (selectedAddressValidationError.value) Color.Red else if (selectedAddress != null) colorResource(
+                                id = R.color.fadedGray
+                            ) else colorResource(id = R.color.turboBlue),
+                            backgroundColor = if (selectedAddressValidationError.value) colorResource(
+                                id = R.color.fadedGray
+                            ) else if (selectedAddress != null) colorResource(id = R.color.turboBlue) else colorResource(
+                                id = R.color.fadedGray
+                            ),
                         )
                         Column(
                             modifier = Modifier
@@ -316,10 +363,10 @@ fun BookingDetailsConfirmation(
                                 ), modifier = Modifier.padding(bottom = 5.dp)
                             )
                             Text(
-                                text = if (selectedAddressValidationError.value) "Please select an address for cleaning in order to proceed!" else if (selectedAddress != null) "Selected Address: ${selectedAddress.tag} - ${selectedAddress.address}" else "Tap to select an address where to do the cleaning...",
+                                text = if (selectedAddressValidationError.value) "Please select an address for cleaning in order to proceed!" else if (selectedAddress != null) "Selected: ${selectedAddress.tag} - ${selectedAddress.address}" else "Tap to select an address where to do the cleaning...",
                                 style = TextStyle(
                                     color = if (selectedAddressValidationError.value) Color.Red else Color.Gray,
-                                    fontSize = 14.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.W400,
                                 ),
                             )
@@ -357,8 +404,14 @@ fun BookingDetailsConfirmation(
                         CustomPaddedIcon(
                             icon = R.drawable.credit_card_filled,
                             backgroundPadding = 7,
-                            iconColor = if (selectedCardValidationError.value) Color.Red else if (selectedCard != null) colorResource(id = R.color.fadedGray) else colorResource(id = R.color.turboBlue),
-                            backgroundColor = if (selectedCardValidationError.value) colorResource(id = R.color.fadedGray) else if (selectedCard != null) colorResource(id = R.color.turboBlue) else colorResource(id = R.color.fadedGray),
+                            iconColor = if (selectedCardValidationError.value) Color.Red else if (selectedCard != null) colorResource(
+                                id = R.color.fadedGray
+                            ) else colorResource(id = R.color.turboBlue),
+                            backgroundColor = if (selectedCardValidationError.value) colorResource(
+                                id = R.color.fadedGray
+                            ) else if (selectedCard != null) colorResource(id = R.color.turboBlue) else colorResource(
+                                id = R.color.fadedGray
+                            ),
                         )
                         Column(
                             modifier = Modifier
@@ -373,10 +426,10 @@ fun BookingDetailsConfirmation(
                                 modifier = Modifier.padding(bottom = 5.dp)
                             )
                             Text(
-                                text = if (selectedCardValidationError.value) "Please select a card for billing in order to proceed!" else if (selectedCard != null) "Selected Card: ${selectedCard.tag} - ${selectedCard.cardNumber}" else "Tap to select a card to be billed for the cleaning service...",
+                                text = if (selectedCardValidationError.value) "Please select a card for billing in order to proceed!" else if (selectedCard != null) "Selected: ${selectedCard.tag} - ${selectedCard.cardNumber}" else "Tap to select a card to be billed for the cleaning service...",
                                 style = TextStyle(
                                     color = if (selectedCardValidationError.value) Color.Red else Color.Gray,
-                                    fontSize = 14.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.W400,
                                 ),
                             )
@@ -412,6 +465,8 @@ fun BookingDetailsConfirmation(
                         textInputAutoCap = KeyboardCapitalization.Sentences,
                         validationErrorText = "Please provide some wash instructions to guide the cleaner.",
                         singleLine = false,
+                        minLines = 5,
+                        maxLines = 7,
                         modifier = Modifier
                             .padding(
                                 15.dp
@@ -437,7 +492,16 @@ fun BookingDetailsConfirmation(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(15.dp)
+                            .padding(horizontal = 15.dp, vertical = 10.dp)
+                            .background(
+                                color = if (selectedVehicle != null && selectedAddress != null && selectedCard != null && washInstructions.value
+                                        .trim()
+                                        .isNotEmpty()
+                                ) colorResource(
+                                    id = R.color.turboBlue
+                                ) else colorResource(id = R.color.fadedGray),
+                                shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                            )
                     )
                 }
             }
