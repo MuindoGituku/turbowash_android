@@ -1,5 +1,6 @@
 package com.ed.turbowash_android.screens.profilemanagement.initialsetup
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -177,8 +179,11 @@ fun AddressDetailsStep(
                     customTextColor = Color.Black,
                     backgroundColor = colorResource(id = R.color.fadedGray),
                     modifier = Modifier
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                        .background(
+                            color = colorResource(id = R.color.fadedGray),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
                 )
                 MaxWidthButton(
                     buttonText = "Create Profile",
@@ -188,8 +193,11 @@ fun AddressDetailsStep(
                     customTextColor = Color.White,
                     modifier = Modifier
                         .weight(1f)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                        .background(
+                            color = colorResource(id = R.color.turboBlue),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
                 )
             }
         }

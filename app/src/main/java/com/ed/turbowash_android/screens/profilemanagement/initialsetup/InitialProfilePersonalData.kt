@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -289,8 +291,11 @@ fun PersonalInformationStep(
                     customTextColor = Color.Black,
                     backgroundColor = colorResource(id = R.color.fadedGray),
                     modifier = Modifier
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(5.dp))
+                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                        .background(
+                            color = colorResource(id = R.color.fadedGray),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
                 )
                 MaxWidthButton(
                     buttonText = "Continue",
@@ -300,8 +305,11 @@ fun PersonalInformationStep(
                     customTextColor = Color.White,
                     modifier = Modifier
                         .weight(1f)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(5.dp))
+                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                        .background(
+                            color = colorResource(id = R.color.turboBlue),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
                 )
             }
         }

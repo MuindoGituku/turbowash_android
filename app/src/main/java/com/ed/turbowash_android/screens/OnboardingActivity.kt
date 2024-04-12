@@ -1,6 +1,7 @@
 package com.ed.turbowash_android.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,13 +10,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.customwidgets.OnboardingScreenView
 import com.ed.turbowash_android.models.OnboardingStep
@@ -63,7 +68,12 @@ fun WelcomeWalkThrough(onOnboardingComplete: () -> Unit) {
                                 onOnboardingComplete()
                             },
                             customTextColor = Color.White,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = colorResource(id = R.color.turboBlue),
+                                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                                )
                         )
                     }
                 } else {
@@ -76,7 +86,12 @@ fun WelcomeWalkThrough(onOnboardingComplete: () -> Unit) {
                                 }
                             },
                             customTextColor = Color.White,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = colorResource(id = R.color.turboBlue),
+                                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                                )
                         )
                     }
                 }

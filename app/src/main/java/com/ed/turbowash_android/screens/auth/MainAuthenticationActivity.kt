@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -112,12 +114,16 @@ fun AuthActivityScreenView(viewModel: UserAuthenticationViewModel, onAuthComplet
         MaxWidthButton(
             buttonText = "Continue With Apple",
             buttonAction = {  },
-            backgroundColor = colorResource(id = R.color.fadedGray),
+            backgroundColor = colorResource(id = R.color.turboBlue),
             customImageName = R.drawable.apple_logo,
+            customTextColor = colorResource(id = R.color.fadedGray),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .padding(horizontal = 15.dp, vertical = 10.dp)
+                .background(
+                    color = colorResource(id = R.color.turboBlue),
+                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                )
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -127,40 +133,48 @@ fun AuthActivityScreenView(viewModel: UserAuthenticationViewModel, onAuthComplet
                 val signInIntent = googleSignInClient.signInIntent
                 googleSignInLauncher.launch(signInIntent)
             },
-            backgroundColor = colorResource(id = R.color.fadedGray),
+            backgroundColor = colorResource(id = R.color.googleBlue),
+            customTextColor = colorResource(id = R.color.fadedGray),
             customImageName = R.drawable.google_logo,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .padding(horizontal = 15.dp, vertical = 10.dp)
+                .background(
+                    color = colorResource(id = R.color.googleBlue),
+                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                )
         )
 
         Spacer(modifier = Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 15.dp, vertical = 20.dp)) {
-            Divider(
-                thickness = 1.dp,
-                modifier = Modifier.weight(1f)
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                thickness = 1.dp
             )
             Text(
                 text = "OR",
                 fontWeight = FontWeight.Black,
                 modifier = Modifier.padding(horizontal = 15.dp)
             )
-            Divider(
-                thickness = 1.dp,
-                modifier = Modifier.weight(1f)
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                thickness = 1.dp
             )
         }
         Spacer(modifier = Modifier.height(10.dp))
         MaxWidthButton(
             buttonText = "Continue With Email",
             buttonAction = {  },
-            backgroundColor = colorResource(id = R.color.fadedGray),
+            backgroundColor = colorResource(id = R.color.black),
+            customTextColor = colorResource(id = R.color.fadedGray),
             customImageName = R.drawable.mail_filled,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .padding(horizontal = 15.dp, vertical = 10.dp)
+                .background(
+                    color = colorResource(id = R.color.black),
+                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                )
         )
 
         Spacer(modifier = Modifier.weight(1f))
