@@ -37,8 +37,10 @@ import com.ed.turbowash_android.R
 @Composable
 fun CustomIconTextField(
     fieldLabel: String,
-    fieldValue: MutableState<String>,
     modifier: Modifier = Modifier,
+    fieldPlaceholder: String  = "",
+    fieldSupportingText: String  = "",
+    fieldValue: MutableState<String>,
     onValueChange: ((String) -> Unit)? = null,
     fieldIcon:Int? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -71,6 +73,8 @@ fun CustomIconTextField(
                 onValueChange?.invoke(newValue) ?: run { fieldValue.value = newValue }
             },
             label = { Text(text = fieldLabel) },
+            placeholder = { if (fieldPlaceholder.isNotEmpty()) Text(text = fieldPlaceholder) },
+            supportingText = { if (fieldSupportingText.isNotEmpty()) Text(text = fieldSupportingText) },
             leadingIcon = if (fieldIcon != null) {
                 {
                     Image(

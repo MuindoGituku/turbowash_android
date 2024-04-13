@@ -1,5 +1,6 @@
 package com.ed.turbowash_android.screens.profilemanagement.profileupdates.savedaddresses
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -47,7 +49,6 @@ import com.ed.turbowash_android.viewmodels.LocationSearchViewModel
 fun AddSavedAddressScreen(
     customerProfileViewModel: CustomerProfileViewModel,
     onClickBackArrow: () -> Unit,
-    onUploadAddressSuccessfully: () -> Unit,
 ) {
     val loadingProfile = customerProfileViewModel.loading.collectAsState().value
     val customer = customerProfileViewModel.customerProfile.collectAsState().value!!
@@ -148,6 +149,7 @@ fun AddSavedAddressScreen(
                 CustomIconTextField(
                     fieldValue = addressTag,
                     fieldLabel = "Address Tag",
+                    fieldIcon = R.drawable.hash_tag,
                     hasValidationError = addressTagValidationError,
                     validationErrorText = "Please provide a unique tag to remember this address by e.g., home, school, work etc.",
                     modifier = Modifier
@@ -242,15 +244,18 @@ fun AddSavedAddressScreen(
                 )
                 MaxWidthButton(
                     buttonText = "Add New Address",
-                    buttonAction = {
-                        if (!validate()){
-
-                        }
-                    },
-                    customTextColor = Color.White,
+                    buttonAction = { },
+                    backgroundColor = colorResource(id = R.color.turboBlue),
+                    customTextColor = colorResource(id = R.color.fadedGray),
+                    customImageName = R.drawable.add_address_filled,
+                    customImageColor = colorResource(id = R.color.fadedGray),
                     modifier = Modifier
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 20.dp)
+                        .background(
+                            color = colorResource(id = R.color.turboBlue),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
                 )
             }
         }

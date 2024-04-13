@@ -114,14 +114,15 @@ fun AuthActivityScreenView(viewModel: UserAuthenticationViewModel, onAuthComplet
         MaxWidthButton(
             buttonText = "Continue With Apple",
             buttonAction = {  },
-            backgroundColor = colorResource(id = R.color.turboBlue),
+            backgroundColor = colorResource(id = R.color.black),
             customImageName = R.drawable.apple_logo,
+            customImageColor = colorResource(id = R.color.fadedGray),
             customTextColor = colorResource(id = R.color.fadedGray),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 15.dp, vertical = 10.dp)
                 .background(
-                    color = colorResource(id = R.color.turboBlue),
+                    color = colorResource(id = R.color.black),
                     shape = RoundedCornerShape(corner = CornerSize(5.dp))
                 )
         )
@@ -165,14 +166,15 @@ fun AuthActivityScreenView(viewModel: UserAuthenticationViewModel, onAuthComplet
         MaxWidthButton(
             buttonText = "Continue With Email",
             buttonAction = {  },
-            backgroundColor = colorResource(id = R.color.black),
+            backgroundColor = colorResource(id = R.color.turboBlue),
             customTextColor = colorResource(id = R.color.fadedGray),
             customImageName = R.drawable.mail_filled,
+            customImageColor = colorResource(id = R.color.fadedGray),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 15.dp, vertical = 10.dp)
                 .background(
-                    color = colorResource(id = R.color.black),
+                    color = colorResource(id = R.color.turboBlue),
                     shape = RoundedCornerShape(corner = CornerSize(5.dp))
                 )
         )

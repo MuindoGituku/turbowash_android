@@ -1,8 +1,10 @@
 package com.ed.turbowash_android.repositories
 
 import com.ed.turbowash_android.exceptions.*
+import com.ed.turbowash_android.models.City
 import com.ed.turbowash_android.models.Contract
 import com.ed.turbowash_android.models.Schedule
+import com.ed.turbowash_android.models.ScheduleLocal
 import com.ed.turbowash_android.models.ServiceProvider
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -93,12 +95,12 @@ class ProviderProfileRepository() {
         providersList
     }
 
-    suspend fun getFilteredProvidersWithRegionAndSchedule(selectedDate: Date, selectedCity: String, selectedProvince: String, selectedServiceID: String): MutableList<ServiceProvider> = executeWithExceptionHandling {
+    suspend fun getFilteredProvidersWithRegionAndSchedule(selectedWashPeriod: ScheduleLocal, selectedCity: String, selectedProvince: String, selectedServiceID: String): MutableList<ServiceProvider> = executeWithExceptionHandling {
         val schedCollQuery = db.collection("schedules")
-            .whereGreaterThanOrEqualTo("schedule_period.start_time", Timestamp(selectedDate))
-            .whereLessThanOrEqualTo("schedule_period.end_time", Timestamp(selectedDate))
+            .whereEqualTo("schedule_period.start_time", selectedWashPeriod.schedulePeriod.startTime)
+            .whereEqualTo("schedule_period.end_time", selectedWashPeriod.schedulePeriod.endTime)
+            .whereEqualTo("schedule_day", selectedWashPeriod.scheduleDay)
             .whereArrayContains("services_offered", selectedServiceID)
-            .whereArrayContains("schedule_map_region", mapOf("name" to selectedCity, "province" to selectedProvince))
             .get().await()
 
         val providerIDsList = mutableListOf<String>()
@@ -111,7 +113,11 @@ class ProviderProfileRepository() {
                 schedule.let {
                     if (it != null) {
                         it.id = schedDoc.id
-                        it.let { it1 -> providerIDsList.add(it1.serviceProviderID) }
+                        it.let { it1 ->
+                            if (it1.scheduleMapRegion.contains(City(selectedCity, selectedProvince))) {
+                                providerIDsList.add(it1.serviceProviderID)
+                            }
+                        }
                     }
                 }
             }

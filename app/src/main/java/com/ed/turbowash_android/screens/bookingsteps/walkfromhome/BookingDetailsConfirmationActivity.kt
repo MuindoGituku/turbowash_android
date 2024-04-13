@@ -48,14 +48,19 @@ import com.ed.turbowash_android.customwidgets.CustomIconTextField
 import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.models.Customer
+import com.ed.turbowash_android.models.SchedulePeriod
 import com.ed.turbowash_android.screens.bookingsteps.WashAddressPickerSheet
 import com.ed.turbowash_android.screens.bookingsteps.WashBillCardPickerSheet
 import com.ed.turbowash_android.screens.bookingsteps.WashDateTimePickerSheet
 import com.ed.turbowash_android.screens.bookingsteps.WashVehiclePickerSheet
 import com.ed.turbowash_android.viewmodels.SharedInstancesViewModel
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
 @OptIn(ExperimentalMaterialApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -75,10 +80,20 @@ fun BookingDetailsConfirmation(
 
     var currentDisplaySheet by remember { mutableStateOf(BookingDetailsSheets.ShowDateTimePickerSheet) }
 
-    val selectedWashDate = sharedInstancesViewModel.selectedWashDate.collectAsState().value
-    val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' hh:mm a")
-    val selectedWashDateText = remember(selectedWashDate) {
-        mutableStateOf("Selected: ${selectedWashDate.format(dateFormatter)}")
+    var mutableSelectedWashDay  = remember { mutableStateOf(Date()) }
+    var mutableSelectedWashPeriod = remember { mutableStateOf<SchedulePeriod?>(null) }
+
+    val selectedWashPeriod = sharedInstancesViewModel.selectedWashPeriod.collectAsState().value
+    val selectedWashPeriodValidationError = remember { mutableStateOf(false) }
+
+    val localDate = selectedWashPeriod?.scheduleDay?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())
+        ?.toLocalDateTime()
+    val localStartTime = selectedWashPeriod?.schedulePeriod?.startTime?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
+    val localEndTime = selectedWashPeriod?.schedulePeriod?.endTime?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
+    val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm a")
+    val selectedWashDateText = remember {
+        mutableStateOf("${localDate?.format(dateFormatter)} from ${localStartTime?.format(timeFormatter)} to ${localEndTime?.format(timeFormatter)}")
     }
 
     val selectedService = sharedInstancesViewModel.selectedService.collectAsState().value!!
@@ -118,9 +133,13 @@ fun BookingDetailsConfirmation(
         sheetState = modalBottomSheetState,
         sheetContent = {
             when (currentDisplaySheet) {
-                BookingDetailsSheets.ShowDateTimePickerSheet -> WashDateTimePickerSheet {
+                BookingDetailsSheets.ShowDateTimePickerSheet -> WashDateTimePickerSheet(
+                    selectedDate = mutableSelectedWashDay,
+                    selectedPeriod = mutableSelectedWashPeriod,
+                    onConfirmSelection = { date, schedulePeriod ->
 
-                }
+                    }
+                )
 
                 BookingDetailsSheets.ShowVehiclePickerSheet -> WashVehiclePickerSheet(
                     vehiclesList = customer.savedVehicles,
@@ -225,7 +244,15 @@ fun BookingDetailsConfirmation(
                     ) {
                         CustomPaddedIcon(
                             icon = R.drawable.calendar_filled,
-                            backgroundPadding = 7
+                            backgroundPadding = 7,
+                            iconColor = if (selectedWashPeriodValidationError.value) Color.Red else if (selectedWashPeriod != null) colorResource(
+                                id = R.color.fadedGray
+                            ) else colorResource(id = R.color.turboBlue),
+                            backgroundColor = if (selectedWashPeriodValidationError.value) colorResource(
+                                id = R.color.fadedGray
+                            ) else if (selectedWashPeriod != null) colorResource(id = R.color.turboBlue) else colorResource(
+                                id = R.color.fadedGray
+                            ),
                         )
                         Column(
                             modifier = Modifier
@@ -240,9 +267,9 @@ fun BookingDetailsConfirmation(
                                 ), modifier = Modifier.padding(bottom = 5.dp)
                             )
                             Text(
-                                text = selectedWashDateText.value,
+                                text = if (selectedWashPeriodValidationError.value) "Please select a period when you want to do the cleaning!" else if (selectedWashPeriod != null) selectedWashDateText.value else "Tap to select a period for the cleaning...",
                                 style = TextStyle(
-                                    color = Color.Gray,
+                                    color = if (selectedWashPeriodValidationError.value) Color.Red else Color.Gray,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.W400,
                                 ),

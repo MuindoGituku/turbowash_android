@@ -24,11 +24,11 @@ import com.ed.turbowash_android.R
 fun MaxWidthButton(
     buttonText: String,
     buttonAction: () -> Unit,
+    modifier: Modifier = Modifier,
     backgroundColor: Color = colorResource(id = R.color.turboBlue),
     customTextColor: Color = Color.Black,
-    customImageColor: Color = colorResource(id = R.color.fadedGray),
+    customImageColor: Color? = null,
     customImageName: Int? = null,
-    modifier: Modifier = Modifier,
 ) {
     Button(
         onClick = { buttonAction() },
@@ -46,7 +46,7 @@ fun MaxWidthButton(
                     modifier = Modifier
                         .height(24.dp)
                         .padding(end = 10.dp),
-                    colorFilter = ColorFilter.tint(customImageColor)
+                    colorFilter = if (customImageColor != null) ColorFilter.tint(customImageColor) else null
                 )
             }
             Text(

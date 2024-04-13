@@ -30,6 +30,8 @@ import com.ed.turbowash_android.models.Customer
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
 import com.ed.turbowash_android.models.SavedVehicle
+import com.ed.turbowash_android.models.ScheduleLocal
+import com.ed.turbowash_android.models.SchedulePeriod
 import com.ed.turbowash_android.models.Service
 import com.ed.turbowash_android.viewmodels.ContractsViewModel
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
@@ -44,7 +46,7 @@ fun AvailableProvidersBrowseActivity(
     selectedVehicle: SavedVehicle,
     selectedPaymentCard: PaymentCard,
     washInstructions: String,
-    selectedDate: Date,
+    selectedWashPeriod: ScheduleLocal,
     onClickBackArrow: () -> Unit,
     onContractUploadSuccess: () -> Unit
 ) {
@@ -55,7 +57,7 @@ fun AvailableProvidersBrowseActivity(
 
     LaunchedEffect(key1 = providerProfileViewModel) {
         providerProfileViewModel.getFilteredProvidersWithRegionAndSchedule(
-            selectedDate,
+            selectedWashPeriod,
             selectedAddress.city,
             selectedAddress.province,
             selectedService.id

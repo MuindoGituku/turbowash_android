@@ -9,6 +9,7 @@ import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
 import com.ed.turbowash_android.models.SavedVehicle
 import com.ed.turbowash_android.models.Schedule
+import com.ed.turbowash_android.models.ScheduleLocal
 import com.ed.turbowash_android.models.Service
 import com.ed.turbowash_android.models.ServiceProvider
 import com.ed.turbowash_android.repositories.ProviderProfileRepository
@@ -84,7 +85,7 @@ class ProviderProfileViewModel @Inject constructor(private val providerProfileRe
         providerProfileRepo.getGeneralListOfProvidersFromIDs(providerIDs).also { _providersList.value = it }
     }
 
-    fun getFilteredProvidersWithRegionAndSchedule(selectedDate: Date, selectedCity: String, selectedProvince: String, selectedServiceID: String) = launchDataOperation {
-        providerProfileRepo.getFilteredProvidersWithRegionAndSchedule(selectedDate, selectedCity, selectedProvince, selectedServiceID).also { _providersList.value = it }
+    fun getFilteredProvidersWithRegionAndSchedule(selectedWashPeriod: ScheduleLocal, selectedCity: String, selectedProvince: String, selectedServiceID: String) = launchDataOperation {
+        providerProfileRepo.getFilteredProvidersWithRegionAndSchedule(selectedWashPeriod, selectedCity, selectedProvince, selectedServiceID).also { _providersList.value = it }
     }
 }

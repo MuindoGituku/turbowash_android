@@ -1,29 +1,24 @@
 package com.ed.turbowash_android.viewmodels
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
 import com.ed.turbowash_android.models.SavedVehicle
+import com.ed.turbowash_android.models.ScheduleLocal
 import com.ed.turbowash_android.models.Service
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class SharedInstancesViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle) : ViewModel() {
-    @RequiresApi(Build.VERSION_CODES.O)
-    private val _selectedWashDate = MutableStateFlow<LocalDate>(LocalDate.now())
-    @RequiresApi(Build.VERSION_CODES.O)
-    val selectedWashDate = _selectedWashDate.asStateFlow()
+    private val _selectedWashPeriod = MutableStateFlow<ScheduleLocal?>(null)
+    val selectedWashPeriod = _selectedWashPeriod.asStateFlow()
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun updateSelectedWashDate(date: LocalDate){
-        _selectedWashDate.value = date
+    fun updateSelectedWashPeriod(period: ScheduleLocal){
+        _selectedWashPeriod.value = period
     }
 
     private val _selectedService = MutableStateFlow<Service?>(null)

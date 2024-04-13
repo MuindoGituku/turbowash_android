@@ -194,8 +194,8 @@ fun RootHomeNavigation(onLogOutCustomer: () -> Unit, onContractUploadSuccess: ()
                         sharedInstancesViewModel.selectedAddress.collectAsState().value!!
                     val selectedCard =
                         sharedInstancesViewModel.selectedPaymentCard.collectAsState().value!!
-                    val selectedDate =
-                        sharedInstancesViewModel.selectedWashDate.collectAsState().value
+                    val selectedWashPeriod =
+                        sharedInstancesViewModel.selectedWashPeriod.collectAsState().value!!
                     val washInstructions =
                         sharedInstancesViewModel.washInstructions.collectAsState().value
 
@@ -205,9 +205,7 @@ fun RootHomeNavigation(onLogOutCustomer: () -> Unit, onContractUploadSuccess: ()
                         selectedAddress = selectedAddress,
                         selectedVehicle = selectedVehicle,
                         selectedPaymentCard = selectedCard,
-                        selectedDate = Date.from(
-                            selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()
-                        ),
+                        selectedWashPeriod = selectedWashPeriod,
                         washInstructions = washInstructions,
                         onClickBackArrow = { navController.popBackStack() },
                         onContractUploadSuccess = { onContractUploadSuccess() },
@@ -253,7 +251,6 @@ fun RootHomeNavigation(onLogOutCustomer: () -> Unit, onContractUploadSuccess: ()
                     AddSavedAddressScreen(
                         customerProfileViewModel = customerProfileViewModel,
                         onClickBackArrow = { navController.popBackStack() },
-                        onUploadAddressSuccessfully = { }
                     )
                 }
                 composable(Screen.UpdateSelectedAddress.route) { navBackStackEntry ->
@@ -323,7 +320,7 @@ fun RootHomeNavigation(onLogOutCustomer: () -> Unit, onContractUploadSuccess: ()
                 composable(Screen.AddPaymentCard.route) {
                     AddPaymentCardScreen(
                         customerProfileViewModel = customerProfileViewModel,
-                        navController = navController
+                        onClickBackArrow = { navController.popBackStack() },
                     )
                 }
                 composable(Screen.UpdateSelectedCard.route) {
