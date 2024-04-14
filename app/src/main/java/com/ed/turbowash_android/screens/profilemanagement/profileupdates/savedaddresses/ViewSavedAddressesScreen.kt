@@ -5,6 +5,7 @@
 
 package com.ed.turbowash_android.screens.profilemanagement.profileupdates.savedaddresses
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Scaffold
@@ -23,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -97,10 +101,17 @@ fun ViewSavedAddressesScreen(
                 MaxWidthButton(
                     buttonText = "Add New Address",
                     buttonAction = { onClickAddNewAddress() },
-                    customTextColor = Color.White,
+                    backgroundColor = colorResource(id = R.color.turboBlue),
+                    customTextColor = colorResource(id = R.color.fadedGray),
+                    customImageName = R.drawable.add_address_filled,
+                    customImageColor = colorResource(id = R.color.fadedGray),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp)
+                        .padding(horizontal = 15.dp, vertical = 20.dp)
+                        .background(
+                            color = colorResource(id = R.color.turboBlue),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
                 )
             }
         }

@@ -1,8 +1,3 @@
-/**
- * @author Group 3 - Muindo Gituku, Emre Deniz, Nkemjika Obi
- * @date Apr, 2024
- */
-
 package com.ed.turbowash_android.screens.bookingsteps.walkfromhome
 
 import android.app.DatePickerDialog
@@ -164,6 +159,7 @@ fun BookingDetailsConfirmation(
                         sharedInstancesViewModel.updateSelectedAddress(it)
                         coroutineScope.launch{ modalBottomSheetState.hide() }
                     },
+                    currentSelectedAddress = selectedAddress,
                     onClickAddNewAddress = {
                         coroutineScope.launch{ modalBottomSheetState.hide() }
                         onClickAddNewAddress()
@@ -176,6 +172,7 @@ fun BookingDetailsConfirmation(
                         sharedInstancesViewModel.updateSelectedPaymentCard(it)
                         coroutineScope.launch{ modalBottomSheetState.hide() }
                     },
+                    currentSelectedCard = selectedCard,
                     onClickAddNewCard = {
                         coroutineScope.launch{ modalBottomSheetState.hide() }
                         onClickAddNewCard()

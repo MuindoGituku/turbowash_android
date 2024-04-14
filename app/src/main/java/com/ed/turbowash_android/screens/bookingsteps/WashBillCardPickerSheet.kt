@@ -1,8 +1,3 @@
-/**
- * @author Group 3 - Muindo Gituku, Emre Deniz, Nkemjika Obi
- * @date Apr, 2024
- */
-
 package com.ed.turbowash_android.screens.bookingsteps
 
 import androidx.compose.foundation.background
@@ -26,12 +21,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ed.turbowash_android.R
+import com.ed.turbowash_android.customwidgets.CustomCardRadioButton
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.models.PaymentCard
 
 @Composable
-fun WashBillCardPickerSheet (cardsList: MutableList<PaymentCard>, onCardConfirmed: (PaymentCard) -> Unit, onClickAddNewCard: () -> Unit) {
-    Column (
+fun WashBillCardPickerSheet(
+    cardsList: MutableList<PaymentCard>,
+    onCardConfirmed: (PaymentCard) -> Unit,
+    onClickAddNewCard: () -> Unit,
+    currentSelectedCard: PaymentCard?
+) {
+    Column(
         modifier = Modifier
             .fillMaxHeight(0.9f)
     ) {
@@ -45,7 +46,11 @@ fun WashBillCardPickerSheet (cardsList: MutableList<PaymentCard>, onCardConfirme
         )
         LazyColumn() {
             items(cardsList) {
-                Text(text = it.nameOnCard, modifier = Modifier.clickable { onCardConfirmed(it) })
+                CustomCardRadioButton(
+                    card = it,
+                    onTapCard = onCardConfirmed,
+                    cardSelected = currentSelectedCard == it
+                )
             }
         }
         MaxWidthButton(

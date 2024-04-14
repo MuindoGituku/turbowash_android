@@ -1,8 +1,3 @@
-/**
- * @author Group 3 - Muindo Gituku, Emre Deniz, Nkemjika Obi
- * @date Apr, 2024
- */
-
 package com.ed.turbowash_android.screens.bookingsteps
 
 import androidx.compose.foundation.background
@@ -26,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ed.turbowash_android.R
+import com.ed.turbowash_android.customwidgets.CustomAddressRadioButton
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
@@ -34,7 +30,8 @@ import com.ed.turbowash_android.models.SavedAddress
 fun WashAddressPickerSheet(
     addressesList: MutableList<SavedAddress>,
     onAddressConfirmed: (SavedAddress) -> Unit,
-    onClickAddNewAddress: () -> Unit
+    onClickAddNewAddress: () -> Unit,
+    currentSelectedAddress: SavedAddress?
 ) {
     Column(
         modifier = Modifier
@@ -50,7 +47,7 @@ fun WashAddressPickerSheet(
         )
         LazyColumn() {
             items(addressesList) {
-                Text(text = it.address, modifier = Modifier.clickable { onAddressConfirmed(it) })
+                CustomAddressRadioButton(address = it, onTapAddress = onAddressConfirmed, addressSelected = currentSelectedAddress == it)
             }
         }
         MaxWidthButton(

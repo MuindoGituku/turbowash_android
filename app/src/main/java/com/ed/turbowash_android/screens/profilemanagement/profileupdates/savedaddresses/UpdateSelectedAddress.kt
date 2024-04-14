@@ -5,6 +5,7 @@
 
 package com.ed.turbowash_android.screens.profilemanagement.profileupdates.savedaddresses
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -257,16 +260,17 @@ fun UpdateSavedAddressScreen(
                         .padding(10.dp),
                 )
                 MaxWidthButton(
-                    buttonText = "Update Address",
-                    buttonAction = {
-                        if (!validate()){
-
-                        }
-                    },
-                    customTextColor = Color.White,
+                    buttonText = "Update Selected Address",
+                    buttonAction = { },
+                    backgroundColor = colorResource(id = R.color.turboBlue),
+                    customTextColor = colorResource(id = R.color.fadedGray),
                     modifier = Modifier
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 20.dp)
+                        .background(
+                            color = colorResource(id = R.color.turboBlue),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
                 )
             }
         }

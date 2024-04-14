@@ -17,6 +17,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -306,7 +308,7 @@ fun UpdatePersonalDataScreen(
                     validationErrorText = "Please provide your full names in order to proceed",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 )
                 CustomIconTextField(
                     fieldValue = emailAddress,
@@ -317,7 +319,7 @@ fun UpdatePersonalDataScreen(
                     fieldIcon = R.drawable.mail_outline,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 )
                 CustomIconTextField(
                     fieldValue = phoneNumber,
@@ -329,7 +331,7 @@ fun UpdatePersonalDataScreen(
                     validationErrorText = "Your phone number should be 10 digits, without any spaces, special characters or country codes",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 )
                 CustomIconClickableField(
                     fieldLabel = "Gender",
@@ -340,7 +342,7 @@ fun UpdatePersonalDataScreen(
                     fieldIcon = R.drawable.gender_filled,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 )
                 CustomIconClickableField(
                     fieldLabel = "Date Of Birth",
@@ -376,11 +378,17 @@ fun UpdatePersonalDataScreen(
                         MaxWidthButton(
                             buttonText = "Update Personal Data",
                             buttonAction = { onClickBackArrow() },
-                            customTextColor = Color.White,
+                            backgroundColor = colorResource(id = R.color.turboBlue),
+                            customTextColor = colorResource(id = R.color.fadedGray),
+                            customImageName = R.drawable.user_circle_thin,
+                            customImageColor = colorResource(id = R.color.fadedGray),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(15.dp)
-                                .clip(RoundedCornerShape(5.dp))
+                                .padding(horizontal = 15.dp, vertical = 20.dp)
+                                .background(
+                                    color = colorResource(id = R.color.turboBlue),
+                                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                                )
                         )
                     }
                 }

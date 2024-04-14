@@ -118,7 +118,7 @@ fun MainSettingsScreen(
                             }
                         )
                         CustomUserProfileCard(
-                            onProfileCardClick = { },
+                            onProfileCardClick = { navController.navigate(Screen.ViewCustomerProfile.route) },
                             imagePainter = painter,
                             fullNames = customer.value!!.personalData.fullNames,
                             emailAddress = customer.value!!.personalData.emailAddress.ifEmpty { "(hidden email address)" },
