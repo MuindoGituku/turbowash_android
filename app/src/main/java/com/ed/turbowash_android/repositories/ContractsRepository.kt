@@ -121,7 +121,7 @@ class ContractsRepository() {
                 id = contractID
             } ?: throw IllegalStateException("Contract not found")
 
-            val newMessage = Message(message, Timestamp.now(),user.uid)
+            val newMessage = Message(message, Timestamp.now(),user.uid, false)
 
             contract.conversation.add(newMessage)
             transaction.update(contractDocRef, "conversation", contract.conversation)

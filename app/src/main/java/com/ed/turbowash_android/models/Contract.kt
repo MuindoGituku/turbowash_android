@@ -29,6 +29,7 @@ data class Message(
     @get:PropertyName("message") @set:PropertyName("message") var message: String = "",
     @get:PropertyName("send_time") @set:PropertyName("send_time") var sendTime: Timestamp = Timestamp.now(),
     @get:PropertyName("sender_id") @set:PropertyName("sender_id") var senderID: String = "",
+    @get:PropertyName("is_media_attachment") @set:PropertyName("is_media_attachment") var isMediaAttachment: Boolean = false,
 )
 
 data class ContractInfo(
