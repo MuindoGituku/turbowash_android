@@ -31,6 +31,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
+import com.ed.turbowash_android.customwidgets.ErrorAnimatedScreenWithTryAgain
+import com.ed.turbowash_android.customwidgets.FullScreenLottieAnimWithText
 import com.ed.turbowash_android.models.Customer
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
@@ -56,11 +58,11 @@ fun AvailableProvidersBrowseActivity(
     onContractUploadSuccess: () -> Unit
 ) {
     val providerProfileViewModel: ProviderProfileViewModel = hiltViewModel()
-    val providersLoading = providerProfileViewModel.loading.collectAsState()
-    val providersList = providerProfileViewModel.providersList.collectAsState()
-    val providersError = providerProfileViewModel.error.collectAsState()
+    val providersLoading = providerProfileViewModel.loading.collectAsState().value
+    val providersList = providerProfileViewModel.providersList.collectAsState().value
+    val providersError = providerProfileViewModel.error.collectAsState().value
 
-    LaunchedEffect(key1 = providerProfileViewModel) {
+    LaunchedEffect(key1 = Unit) {
         providerProfileViewModel.getFilteredProvidersWithRegionAndSchedule(
             selectedWashPeriod,
             selectedAddress.city,
@@ -104,6 +106,39 @@ fun AvailableProvidersBrowseActivity(
             }
         }
     ) { paddingValues ->
+        when {
+            providersLoading -> {
+                FullScreenLottieAnimWithText(
+                    lottieResource = R.raw.loading,
+                    loadingAnimationText = "Fetching available cleaners in your region to book. Please wait...",
+                )
+            }
+
+            !providersError.isNullOrBlank() -> {
+                ErrorAnimatedScreenWithTryAgain(
+                    lottieResource = R.raw.doc_error,
+                    errorText = "$providersError. Click the button below to retry.",
+                    retryAction = { providerProfileViewModel.getFilteredProvidersWithRegionAndSchedule(
+                        selectedWashPeriod,
+                        selectedAddress.city,
+                        selectedAddress.province,
+                        selectedService.id
+                    ) },
+                    retryButtonText = "Try Again"
+                )
+            }
+
+            else -> {
+                if (providersList.isEmpty()) {
+                    FullScreenLottieAnimWithText(
+                        lottieResource = R.raw.empty_list,
+                        loadingAnimationText = "There are no available cleaners in this region and at the selected time. Adjust for better results or try again later.",
+                    )
+                } else {
+
+                }
+            }
+        }
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)

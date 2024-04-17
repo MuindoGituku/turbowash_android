@@ -12,6 +12,7 @@ import com.ed.turbowash_android.exceptions.*
 import com.ed.turbowash_android.models.Customer
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
+import com.ed.turbowash_android.models.SavedVehicle
 import com.ed.turbowash_android.repositories.CustomerProfileRepository
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -120,6 +121,18 @@ class CustomerProfileViewModel @Inject constructor(private val customerProfileRe
 
     fun deletePaymentCard(selectedCardTag: String) = launchDataOperation {
         customerProfileRepo.deleteCustomerPaymentCard(selectedCardTag).also { _customerProfile.value = it }
+    }
+
+    fun addSavedVehicle(newVehicle: SavedVehicle) = launchDataOperation {
+        customerProfileRepo.addCustomerVehicle(newVehicle).also { _customerProfile.value = it }
+    }
+
+    fun updateSavedVehicle(existingVehicleTag: String, newVehicleDetails: SavedVehicle) = launchDataOperation {
+        customerProfileRepo.updateCustomerVehicle(existingVehicleTag, newVehicleDetails).also { _customerProfile.value = it }
+    }
+
+    fun deleteSavedVehicle(selectedVehicleTag: String) = launchDataOperation {
+        customerProfileRepo.deleteCustomerVehicle(selectedVehicleTag).also { _customerProfile.value = it }
     }
 
     fun removeProviderFromFavorites(providerID: String) = launchDataOperation {

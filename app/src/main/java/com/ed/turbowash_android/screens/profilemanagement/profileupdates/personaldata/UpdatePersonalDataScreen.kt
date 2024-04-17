@@ -67,6 +67,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.SplashScreenView
 import com.ed.turbowash_android.customwidgets.CustomIconClickableField
@@ -80,9 +82,11 @@ import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Period
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalCoilApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UpdatePersonalDataScreen(
@@ -94,7 +98,7 @@ fun UpdatePersonalDataScreen(
     val error = customerProfileViewModel.error.collectAsState().value
 
     val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
-    val existingProfileUrl = remember { mutableStateOf(customer?.personalData?.profileImage ?: "") }
+    val existingProfileUrl = customer?.personalData?.profileImage ?: ""
 
     val fullNames = remember { mutableStateOf(customer?.personalData?.fullNames ?: "") }
     val fullNamesValidationError = remember { mutableStateOf(false) }
@@ -108,7 +112,13 @@ fun UpdatePersonalDataScreen(
     val genderValidationError = remember { mutableStateOf(false) }
     var showGenderDialog by remember { mutableStateOf(false) }
 
-    val selectedDateOfBirth = remember { mutableStateOf(LocalDate.now()) }
+    val selectedDateOfBirth = remember {
+        mutableStateOf(
+            customer?.personalData?.dateOfBirth?.toDate()?.toInstant()?.atZone(
+                ZoneId.systemDefault()
+            )?.toLocalDate() ?: LocalDate.now()
+        )
+    }
     val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
     val dateOfBirthText = remember(selectedDateOfBirth.value) {
         mutableStateOf("Selected ${selectedDateOfBirth.value.format(dateFormatter)}")
@@ -278,17 +288,38 @@ fun UpdatePersonalDataScreen(
                             modifier = Modifier
                                 .size(110.dp)
                                 .clip(CircleShape)
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(id = R.drawable.user_png),
-                            contentDescription = "Default profile image",
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier
-                                .size(height = 110.dp, width = 110.dp)
-                                .clip(CircleShape)
                                 .aspectRatio(1f)
                         )
+                    } else {
+                        if (customer?.personalData?.profileImage?.isNotEmpty() == true) {
+                            val painter = rememberImagePainter(
+                                data = customer.personalData.profileImage,
+                                builder = {
+                                    crossfade(true)
+                                    placeholder(drawableResId = R.drawable.user_png)
+                                    error(R.drawable.user_png)
+                                }
+                            )
+                            Image(
+                                painter = painter,
+                                contentDescription = "User profile image",
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier
+                                    .size(110.dp)
+                                    .clip(CircleShape)
+                                    .aspectRatio(1f)
+                            )
+                        } else {
+                            Image(
+                                painter = painterResource(id = R.drawable.user_png),
+                                contentDescription = "User profile image",
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier
+                                    .size(110.dp)
+                                    .clip(CircleShape)
+                                    .aspectRatio(1f)
+                            )
+                        }
                     }
                     Image(
                         painter = painterResource(id = R.drawable.camera_add_filled),
@@ -363,6 +394,7 @@ fun UpdatePersonalDataScreen(
                             loadingAnimationText = "Updating your personal data on file. Please wait...",
                         )
                     }
+
                     !error.isNullOrBlank() -> {
                         MaxWidthButton(
                             buttonText = "Retry Updating Data",
@@ -374,10 +406,34 @@ fun UpdatePersonalDataScreen(
                                 .clip(RoundedCornerShape(5.dp))
                         )
                     }
+
                     else -> {
                         MaxWidthButton(
                             buttonText = "Update Personal Data",
-                            buttonAction = { onClickBackArrow() },
+                            buttonAction = {
+                                if (!validate()) {
+                                    customerProfileViewModel.updateCustomerPersonalData(
+                                        fullNames = fullNames.value,
+                                        phoneNumber = phoneNumber.value,
+                                        bio = "",
+                                        gender = gender.value,
+                                        dateOfBirth = Date.from(
+                                            selectedDateOfBirth.value.atStartOfDay(
+                                                ZoneId.systemDefault()
+                                            ).toInstant()
+                                        ),
+                                        initialProfileURL = existingProfileUrl,
+                                        profileImage = imageBitmap.value
+                                    ).also {
+                                        Toast.makeText(
+                                            context,
+                                            "Personal Data Updated",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        onClickBackArrow()
+                                    }
+                                }
+                            },
                             backgroundColor = colorResource(id = R.color.turboBlue),
                             customTextColor = colorResource(id = R.color.fadedGray),
                             customImageName = R.drawable.user_circle_thin,

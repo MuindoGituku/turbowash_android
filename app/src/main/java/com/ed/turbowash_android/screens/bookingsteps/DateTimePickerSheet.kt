@@ -5,8 +5,11 @@
 
 package com.ed.turbowash_android.screens.bookingsteps
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,6 +46,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WashDateTimePickerSheet (
     selectedDate: MutableState<Date>,
@@ -50,11 +54,8 @@ fun WashDateTimePickerSheet (
     onConfirmSelection: (Date, SchedulePeriod) -> Unit
 ) {
     var showDatePickerDialog by remember { mutableStateOf(false) }
-    val selectedMutableLocalDate = remember { mutableStateOf(selectedDate.value.toInstant().atZone(
-        ZoneId.systemDefault()).toLocalDate()) }
-    val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
     val selectedMutableLocalDateText = remember {
-        mutableStateOf("Selected ${selectedMutableLocalDate.value.format(dateFormatter)}")
+        mutableStateOf("Selected ${SimpleDateFormat("EEEE, dd MMM YYYY").format(selectedDate.value)}")
     }
     val dateOfBirthValidationError = remember { mutableStateOf(false) }
 
@@ -99,23 +100,31 @@ fun WashDateTimePickerSheet (
     }
 
     fun canSelectTime(span: String): Boolean {
-        val now = Calendar.getInstance().time
+        val now = Date()
         val dateFormatter = SimpleDateFormat("ha", Locale.getDefault())
 
         val spanStart = span.split("-").firstOrNull()
         val startTime = dateFormatter.parse(spanStart ?: return false) ?: return false
 
-        val calendar = Calendar.getInstance()
-        val selectedDate = Calendar.getInstance().time
+        val selectedCalendar = Calendar.getInstance()
+        selectedCalendar.time = selectedDate.value
 
-        calendar.time = startTime
-        calendar.set(Calendar.YEAR, selectedDate.year)
-        calendar.set(Calendar.MONTH, selectedDate.month)
-        calendar.set(Calendar.DAY_OF_MONTH, selectedDate.day)
+        // Check if the selected date is today
+        val isToday = selectedCalendar.get(Calendar.YEAR) == Calendar.getInstance().get(Calendar.YEAR) &&
+                selectedCalendar.get(Calendar.DAY_OF_YEAR) == Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
 
-        val timeToCheck = calendar.time
+        if (isToday) {
+            // If the selected date is today, check if the start time hour is greater than the current hour
+            val selectedTimeCalendar = Calendar.getInstance()
+            selectedTimeCalendar.time = startTime
+            val selectedHour = selectedTimeCalendar.get(Calendar.HOUR_OF_DAY)
+            val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
-        return now <= timeToCheck
+            return selectedHour > currentHour
+        }
+
+        // For dates in future days, always return true
+        return startTime.before(now)
     }
 
     fun generateTimeSpans(): List<String> {
@@ -129,17 +138,17 @@ fun WashDateTimePickerSheet (
     }
 
     fun spanMatchesSelectedPeriod(span: String): Boolean {
-        if (selectedPeriod.value == null) {
-            return false
+        return if (selectedPeriod.value == null) {
+            false
         } else {
             val twoDateComponents = convertSpanToTime(span)
             if (twoDateComponents.size != 2) {
-                return false
+                false
             } else {
                 val startTime = selectedPeriod.value!!.startTime.toDate()
                 val endTime = selectedPeriod.value!!.endTime.toDate()
 
-                return twoDateComponents.first() == startTime && twoDateComponents.last() == endTime
+                twoDateComponents.first() == startTime && twoDateComponents.last() == endTime
             }
         }
     }
@@ -153,8 +162,16 @@ fun WashDateTimePickerSheet (
                 .padding(5.dp)
                 .clickable(enabled = canSelectTime(span), onClick = onClick)
                 .background(
-                    color = if (spanMatchesSelectedPeriod(span)) colorResource(id = R.color.turboBlue) else if (canSelectTime(span)) Color.White else Color.Gray,
+                    color = if (spanMatchesSelectedPeriod(span)) colorResource(id = R.color.turboBlue) else if (canSelectTime(
+                            span
+                        )
+                    ) Color.White else Color.Gray,
                     shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                )
+                .border(
+                    1.dp,
+                    color = if (canSelectTime(span)) colorResource(id = R.color.turboBlue) else Color.Gray,
+                    shape = RoundedCornerShape(size = 5.dp)
                 )
                 .padding(15.dp),
             textAlign = TextAlign.Center,
@@ -210,7 +227,7 @@ fun WashDateTimePickerSheet (
                         val timeParts = convertSpanToTime(span)
                         selectedPeriod.value = SchedulePeriod(Timestamp(timeParts.first()), Timestamp(timeParts.last()))
 
-                        Log.d("Schedule", selectedPeriod.value.toString())
+                        Log.d("Schedule", "From ${selectedPeriod.value!!.startTime.toDate()} to ${selectedPeriod.value!!.endTime.toDate()}")
                     }
                 )
             }
@@ -240,9 +257,11 @@ fun WashDateTimePickerSheet (
 
         if (showDatePickerDialog) {
             ShowDatePicker(
-                selectedDate = selectedMutableLocalDate.value,
+                selectedDate = selectedDate.value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                 onDateSelected = { date ->
-                    selectedMutableLocalDate.value = date
+                    val dated = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant())
+                    selectedDate.value = dated
+                    Log.d("Selected Date", selectedDate.value.toString())
                     showDatePickerDialog = false
                 }
             )

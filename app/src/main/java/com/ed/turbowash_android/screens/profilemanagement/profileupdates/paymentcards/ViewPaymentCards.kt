@@ -12,20 +12,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,7 +53,9 @@ import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.SavedAddress
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ViewPaymentCardsScreen(
     customerProfileViewModel: CustomerProfileViewModel,
@@ -55,6 +66,10 @@ fun ViewPaymentCardsScreen(
     val loadingProfile = customerProfileViewModel.loading.collectAsState().value
     val customer = customerProfileViewModel.customerProfile.collectAsState().value
     val error = customerProfileViewModel.error.collectAsState().value
+
+    val modalBottomSheetState =
+        androidx.compose.material.rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         bottomBar = {
@@ -118,7 +133,7 @@ fun ViewPaymentCardsScreen(
             loadingProfile -> {
                 FullScreenLottieAnimWithText(
                     lottieResource = R.raw.loading,
-                    loadingAnimationText = "Fetching your customer profile. Please wait...",
+                    loadingAnimationText = "Fetching payment cards saved under your customer profile. Please wait...",
                 )
             }
 
@@ -132,40 +147,79 @@ fun ViewPaymentCardsScreen(
             }
 
             customer != null -> {
-                Column (
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.Start
-                ){
-                    if (customer.savedPaymentCards.isEmpty()) {
-                        FullScreenLottieAnimWithText(
-                            lottieResource = R.raw.empty_list,
-                            loadingAnimationText = "You haven't saved any payment cards to your profile. Saved cards will appear here.",
-                        )
-                    } else {
-                        val savedCards = customer.savedPaymentCards
+                if (customer.savedPaymentCards.isEmpty()) {
+                    FullScreenLottieAnimWithText(
+                        lottieResource = R.raw.empty_list,
+                        loadingAnimationText = "You haven't saved any payment cards to your profile. Saved cards will appear here.",
+                    )
+                } else {
+                    val savedCards = customer.savedPaymentCards
 
-                        LazyColumn(
-                            modifier = Modifier
-                                .weight(1f),
-                            verticalArrangement = Arrangement.Top,
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            items(savedCards, key = { it.tag }) { card ->
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        items(savedCards, key = { it.tag }) { card ->
+                            ModalBottomSheetLayout(
+                                sheetState = modalBottomSheetState,
+                                sheetContent = {
+                                    BottomCardSheetContent(
+                                        card = card,
+                                        onTapDelete = {
+                                            customerProfileViewModel.deletePaymentCard(it.tag)
+                                        },
+                                        onTapUpdate = {
+                                            onClickUpdateSelectedCard(it)
+                                        }
+                                    )
+                                }
+                            ) {
                                 CustomSinglePaymentCardTile(
                                     card = card,
-                                    onTapUpdate = { onClickUpdateSelectedCard(card) },
-                                    onTapDelete = { /*TODO*/ },
+                                    onTapCard = {
+                                        coroutineScope.launch { modalBottomSheetState.show() }
+                                    }
                                 )
                             }
                         }
                     }
                 }
             }
+
             else -> {
                 Text(text = "Something is wrong...")
+            }
+        }
+    }
+}
+
+@Composable
+fun BottomCardSheetContent(
+    card: PaymentCard,
+    onTapUpdate: (PaymentCard) -> Unit,
+    onTapDelete: (PaymentCard) -> Unit
+) {
+    Row(modifier = Modifier.padding(16.dp)) {
+        TextButton(
+            onClick = { onTapUpdate(card) },
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CustomPaddedIcon(icon = R.drawable.camera_add_filled)
+                Spacer(Modifier.height(8.dp))
+                Text("Open Camera")
+            }
+        }
+        Spacer(Modifier.width(15.dp))
+        TextButton(
+            onClick = { onTapDelete(card) },
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CustomPaddedIcon(icon = R.drawable.photo_1_outline)
+                Spacer(Modifier.height(8.dp))
+                Text("Browse Gallery")
             }
         }
     }

@@ -290,7 +290,7 @@ fun RootHomeNavigation(onLogOutCustomer: () -> Unit, onContractUploadSuccess: ()
                 composable(Screen.AddSavedVehicle.route) {
                     AddSavedVehicleScreen(
                         customerProfileViewModel = customerProfileViewModel,
-                        navController = navController
+                        onClickBackArrow = { navController.popBackStack() },
                     )
                 }
                 composable(Screen.UpdateSelectedVehicle.route) { navBackStackEntry ->

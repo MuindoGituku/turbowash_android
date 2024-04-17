@@ -2,6 +2,7 @@ package com.ed.turbowash_android.screens.bookingsteps.walkfromhome
 
 import android.app.DatePickerDialog
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,13 +49,16 @@ import com.ed.turbowash_android.customwidgets.CustomIconTextField
 import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.models.Customer
+import com.ed.turbowash_android.models.ScheduleLocal
 import com.ed.turbowash_android.models.SchedulePeriod
 import com.ed.turbowash_android.screens.bookingsteps.WashAddressPickerSheet
 import com.ed.turbowash_android.screens.bookingsteps.WashBillCardPickerSheet
 import com.ed.turbowash_android.screens.bookingsteps.WashDateTimePickerSheet
 import com.ed.turbowash_android.screens.bookingsteps.WashVehiclePickerSheet
 import com.ed.turbowash_android.viewmodels.SharedInstancesViewModel
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -80,20 +84,22 @@ fun BookingDetailsConfirmation(
 
     var currentDisplaySheet by remember { mutableStateOf(BookingDetailsSheets.ShowDateTimePickerSheet) }
 
-    var mutableSelectedWashDay  = remember { mutableStateOf(Date()) }
-    var mutableSelectedWashPeriod = remember { mutableStateOf<SchedulePeriod?>(null) }
+    val mutableSelectedWashDay = remember { mutableStateOf(Date()) }
+    val mutableSelectedWashPeriod = remember { mutableStateOf<SchedulePeriod?>(null) }
 
     val selectedWashPeriod = sharedInstancesViewModel.selectedWashPeriod.collectAsState().value
     val selectedWashPeriodValidationError = remember { mutableStateOf(false) }
 
-    val localDate = selectedWashPeriod?.scheduleDay?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())
-        ?.toLocalDateTime()
-    val localStartTime = selectedWashPeriod?.schedulePeriod?.startTime?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
-    val localEndTime = selectedWashPeriod?.schedulePeriod?.endTime?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
-    val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm a")
+    val localDate = selectedWashPeriod?.scheduleDay?.toDate()?.let { SimpleDateFormat("dd/MM/YYYY").format(it) }
+
+    val localStartTime = selectedWashPeriod?.schedulePeriod?.startTime?.toDate()
+        ?.let { SimpleDateFormat("HH:MM a").format(it) }
+    val localEndTime = selectedWashPeriod?.schedulePeriod?.endTime?.toDate()
+        ?.let { SimpleDateFormat("HH:MM a").format(it) }
     val selectedWashDateText = remember {
-        mutableStateOf("${localDate?.format(dateFormatter)} from ${localStartTime?.format(timeFormatter)} to ${localEndTime?.format(timeFormatter)}")
+        mutableStateOf(
+            "$localDate from $localStartTime to $localEndTime"
+        )
     }
 
     val selectedService = sharedInstancesViewModel.selectedService.collectAsState().value!!
@@ -107,7 +113,7 @@ fun BookingDetailsConfirmation(
     val selectedCard = sharedInstancesViewModel.selectedPaymentCard.collectAsState().value
     val selectedCardValidationError = remember { mutableStateOf(false) }
 
-    val washInstructions = remember { mutableStateOf("") }
+    val washInstructions = remember { mutableStateOf(sharedInstancesViewModel.washInstructions.value) }
     val washInstructionsValidationError = remember { mutableStateOf(false) }
 
     fun validateBooking(): Boolean {
@@ -118,102 +124,88 @@ fun BookingDetailsConfirmation(
         selectedCardValidationError.value = selectedCard == null
         washInstructionsValidationError.value = washInstructions.value.trim().isEmpty()
 
-        if (selectedVehicleValidationError.value ||
-            selectedAddressValidationError.value ||
-            selectedCardValidationError.value ||
-            washInstructionsValidationError.value
-        ) {
+        if (selectedVehicleValidationError.value || selectedAddressValidationError.value || selectedCardValidationError.value || washInstructionsValidationError.value) {
             hasError = true
         }
 
         return hasError
     }
 
-    ModalBottomSheetLayout(
-        sheetState = modalBottomSheetState,
-        sheetContent = {
-            when (currentDisplaySheet) {
-                BookingDetailsSheets.ShowDateTimePickerSheet -> WashDateTimePickerSheet(
-                    selectedDate = mutableSelectedWashDay,
-                    selectedPeriod = mutableSelectedWashPeriod,
-                    onConfirmSelection = { date, schedulePeriod ->
+    ModalBottomSheetLayout(sheetState = modalBottomSheetState, sheetContent = {
+        when (currentDisplaySheet) {
+            BookingDetailsSheets.ShowDateTimePickerSheet -> WashDateTimePickerSheet(selectedDate = mutableSelectedWashDay,
+                selectedPeriod = mutableSelectedWashPeriod,
+                onConfirmSelection = { date, schedulePeriod ->
+                    val newSchedLocal = ScheduleLocal(
+                        scheduleDay = Timestamp(date), schedulePeriod = schedulePeriod
+                    )
+                    Log.d(
+                        "Schedule Local",
+                        "${newSchedLocal.scheduleDay.toDate()} from ${newSchedLocal.schedulePeriod.startTime.toDate()} to ${newSchedLocal.schedulePeriod.endTime.toDate()}"
+                    )
+                    sharedInstancesViewModel.updateSelectedWashPeriod(newSchedLocal)
+                    coroutineScope.launch { modalBottomSheetState.hide() }
+                })
 
-                    }
-                )
+            BookingDetailsSheets.ShowVehiclePickerSheet -> WashVehiclePickerSheet(vehiclesList = customer.savedVehicles,
+                onVehicleConfirmed = {
+                    sharedInstancesViewModel.updateSelectedVehicle(it)
+                    sharedInstancesViewModel.updateWashInstructions(it.description)
+                    washInstructions.value = it.description
+                    coroutineScope.launch { modalBottomSheetState.hide() }
+                },
+                currentSelectedVehicle = selectedVehicle,
+                onClickAddNewVehicle = {
+                    coroutineScope.launch { modalBottomSheetState.hide() }
+                    onClickAddNewVehicle()
+                })
 
-                BookingDetailsSheets.ShowVehiclePickerSheet -> WashVehiclePickerSheet(
-                    vehiclesList = customer.savedVehicles,
-                    onVehicleConfirmed = {
-                        sharedInstancesViewModel.updateSelectedVehicle(it)
-                        coroutineScope.launch{ modalBottomSheetState.hide() }
-                    },
-                    onClickAddNewVehicle = {
-                        coroutineScope.launch{ modalBottomSheetState.hide() }
-                        onClickAddNewVehicle()
-                    }
-                )
+            BookingDetailsSheets.ShowAddressPickerSheet -> WashAddressPickerSheet(addressesList = customer.savedAddresses,
+                onAddressConfirmed = {
+                    sharedInstancesViewModel.updateSelectedAddress(it)
+                    coroutineScope.launch { modalBottomSheetState.hide() }
+                },
+                currentSelectedAddress = selectedAddress,
+                onClickAddNewAddress = {
+                    coroutineScope.launch { modalBottomSheetState.hide() }
+                    onClickAddNewAddress()
+                })
 
-                BookingDetailsSheets.ShowAddressPickerSheet -> WashAddressPickerSheet(
-                    addressesList = customer.savedAddresses,
-                    onAddressConfirmed = {
-                        sharedInstancesViewModel.updateSelectedAddress(it)
-                        coroutineScope.launch{ modalBottomSheetState.hide() }
-                    },
-                    currentSelectedAddress = selectedAddress,
-                    onClickAddNewAddress = {
-                        coroutineScope.launch{ modalBottomSheetState.hide() }
-                        onClickAddNewAddress()
-                    }
-                )
-
-                BookingDetailsSheets.ShowCardPickerSheet -> WashBillCardPickerSheet(
-                    cardsList = customer.savedPaymentCards,
-                    onCardConfirmed = {
-                        sharedInstancesViewModel.updateSelectedPaymentCard(it)
-                        coroutineScope.launch{ modalBottomSheetState.hide() }
-                    },
-                    currentSelectedCard = selectedCard,
-                    onClickAddNewCard = {
-                        coroutineScope.launch{ modalBottomSheetState.hide() }
-                        onClickAddNewCard()
-                    }
-                )
-            }
+            BookingDetailsSheets.ShowCardPickerSheet -> WashBillCardPickerSheet(cardsList = customer.savedPaymentCards,
+                onCardConfirmed = {
+                    sharedInstancesViewModel.updateSelectedPaymentCard(it)
+                    coroutineScope.launch { modalBottomSheetState.hide() }
+                },
+                currentSelectedCard = selectedCard,
+                onClickAddNewCard = {
+                    coroutineScope.launch { modalBottomSheetState.hide() }
+                    onClickAddNewCard()
+                })
         }
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    backgroundColor = Color.Unspecified,
-                    elevation = 0.dp,
-                    contentPadding = PaddingValues(
-                        start = 15.dp,
-                        end = 15.dp,
-                        bottom = 10.dp,
-                        top = 20.dp
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Box(modifier = Modifier.clickable { onClickBackArrow() }) {
-                        CustomPaddedIcon(
-                            icon = R.drawable.chev_left,
-                            backgroundPadding = 5
-                        )
-                    }
-                    Text(
-                        text = selectedService.name,
-                        style = TextStyle(
-                            fontWeight = FontWeight.W700,
-                            fontSize = 27.sp
-                        ),
-                        modifier = Modifier.padding(
-                            start = 10.dp,
-                            end = 15.dp
-                        )
+    }) {
+        Scaffold(topBar = {
+            TopAppBar(
+                backgroundColor = Color.Unspecified,
+                elevation = 0.dp,
+                contentPadding = PaddingValues(
+                    start = 15.dp, end = 15.dp, bottom = 10.dp, top = 20.dp
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(modifier = Modifier.clickable { onClickBackArrow() }) {
+                    CustomPaddedIcon(
+                        icon = R.drawable.chev_left, backgroundPadding = 5
                     )
                 }
+                Text(
+                    text = selectedService.name, style = TextStyle(
+                        fontWeight = FontWeight.W700, fontSize = 27.sp
+                    ), modifier = Modifier.padding(
+                        start = 10.dp, end = 15.dp
+                    )
+                )
             }
-        ) { paddingValues ->
+        }) { paddingValues ->
             LazyColumn(
                 modifier = Modifier
                     .padding(paddingValues)
@@ -225,9 +217,7 @@ fun BookingDetailsConfirmation(
                     Text(
                         text = "Confirm all the details for the vehicle to be cleaned, when and where to do the cleaning, and which credit/debit card to bill for the service.",
                         style = TextStyle(
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.W400,
-                            lineHeight = 20.sp
+                            fontSize = 15.sp, fontWeight = FontWeight.W400, lineHeight = 20.sp
                         ),
                         modifier = Modifier.padding(
                             start = 15.dp, top = 5.dp, end = 15.dp, bottom = 15.dp
@@ -262,10 +252,8 @@ fun BookingDetailsConfirmation(
                                 .weight(1f)
                         ) {
                             Text(
-                                text = "When do you need the clean?",
-                                style = TextStyle(
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 14.sp
+                                text = "When do you need the clean?", style = TextStyle(
+                                    fontWeight = FontWeight.Black, fontSize = 14.sp
                                 ), modifier = Modifier.padding(bottom = 5.dp)
                             )
                             Text(
@@ -325,8 +313,7 @@ fun BookingDetailsConfirmation(
                         ) {
                             Text(
                                 text = "Which vehicle do you need cleaned?", style = TextStyle(
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 14.sp
+                                    fontWeight = FontWeight.Black, fontSize = 14.sp
                                 ), modifier = Modifier.padding(bottom = 5.dp)
                             )
                             Text(
@@ -387,8 +374,7 @@ fun BookingDetailsConfirmation(
                         ) {
                             Text(
                                 text = "Where do you want the cleaning done?", style = TextStyle(
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 14.sp
+                                    fontWeight = FontWeight.Black, fontSize = 14.sp
                                 ), modifier = Modifier.padding(bottom = 5.dp)
                             )
                             Text(
@@ -449,10 +435,8 @@ fun BookingDetailsConfirmation(
                         ) {
                             Text(
                                 text = "Which payment card do you us to bill?", style = TextStyle(
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 14.sp
-                                ),
-                                modifier = Modifier.padding(bottom = 5.dp)
+                                    fontWeight = FontWeight.Black, fontSize = 14.sp
+                                ), modifier = Modifier.padding(bottom = 5.dp)
                             )
                             Text(
                                 text = if (selectedCardValidationError.value) "Please select a card for billing in order to proceed!" else if (selectedCard != null) "Selected: ${selectedCard.tag} - ${selectedCard.cardNumber}" else "Tap to select a card to be billed for the cleaning service...",
@@ -539,10 +523,7 @@ fun BookingDetailsConfirmation(
 }
 
 enum class BookingDetailsSheets {
-    ShowDateTimePickerSheet,
-    ShowVehiclePickerSheet,
-    ShowAddressPickerSheet,
-    ShowCardPickerSheet,
+    ShowDateTimePickerSheet, ShowVehiclePickerSheet, ShowAddressPickerSheet, ShowCardPickerSheet,
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -554,13 +535,9 @@ fun ShowDatePicker(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit)
     if (showDialog.value) {
         LaunchedEffect(Unit) {
             val datePickerDialog = DatePickerDialog(
-                context,
-                { _, year, monthOfYear, dayOfMonth ->
+                context, { _, year, monthOfYear, dayOfMonth ->
                     onDateSelected(LocalDate.of(year, monthOfYear + 1, dayOfMonth))
-                },
-                selectedDate.year,
-                selectedDate.monthValue - 1,
-                selectedDate.dayOfMonth
+                }, selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth
             )
             datePickerDialog.setOnDismissListener {
                 showDialog.value = false

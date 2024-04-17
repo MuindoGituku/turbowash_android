@@ -102,9 +102,9 @@ class ProviderProfileRepository() {
 
     suspend fun getFilteredProvidersWithRegionAndSchedule(selectedWashPeriod: ScheduleLocal, selectedCity: String, selectedProvince: String, selectedServiceID: String): MutableList<ServiceProvider> = executeWithExceptionHandling {
         val schedCollQuery = db.collection("schedules")
-            .whereEqualTo("schedule_period.start_time", selectedWashPeriod.schedulePeriod.startTime)
-            .whereEqualTo("schedule_period.end_time", selectedWashPeriod.schedulePeriod.endTime)
-            .whereEqualTo("schedule_day", selectedWashPeriod.scheduleDay)
+            .whereLessThanOrEqualTo("schedule_period.start_time", selectedWashPeriod.schedulePeriod.startTime)
+            .whereGreaterThanOrEqualTo("schedule_period.end_time", selectedWashPeriod.schedulePeriod.endTime)
+            //.whereEqualTo("schedule_day", selectedWashPeriod.scheduleDay)
             .whereArrayContains("services_offered", selectedServiceID)
             .get().await()
 
@@ -115,13 +115,14 @@ class ProviderProfileRepository() {
         } else {
             for (schedDoc in schedCollQuery.documents) {
                 val schedule = schedDoc.toObject(Schedule::class.java)
-                schedule.let {
-                    if (it != null) {
-                        it.id = schedDoc.id
-                        it.let { it1 ->
-                            if (it1.scheduleMapRegion.contains(City(selectedCity, selectedProvince))) {
-                                providerIDsList.add(it1.serviceProviderID)
-                            }
+                schedule.let { schedule1 ->
+                    if (schedule1 != null) {
+                        schedule1.id = schedDoc.id
+                        schedule1.let { it1 ->
+                            providerIDsList.add(it1.serviceProviderID)
+//                            if (it1.scheduleMapRegion.any { it.city == selectedCity }) {
+//                                providerIDsList.add(it1.serviceProviderID)
+//                            }
                         }
                     }
                 }

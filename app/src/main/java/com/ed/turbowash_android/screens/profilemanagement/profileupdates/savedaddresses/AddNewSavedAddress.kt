@@ -5,6 +5,7 @@
 
 package com.ed.turbowash_android.screens.profilemanagement.profileupdates.savedaddresses
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +47,10 @@ import androidx.navigation.NavController
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomIconTextField
 import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
+import com.ed.turbowash_android.customwidgets.FullWidthLottieAnimWithText
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
+import com.ed.turbowash_android.models.PlaceCoordinates
+import com.ed.turbowash_android.models.SavedAddress
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
 import com.ed.turbowash_android.viewmodels.LocationSearchViewModel
 
@@ -87,8 +91,13 @@ fun AddSavedAddressScreen(
     fun validate(): Boolean {
         var hasError = false
 
-        addressTagValidationError.value = addressTag.value.isBlank()
-        addressValidationError.value = address.value.isBlank()
+        addressTagValidationError.value = addressTag.value.isBlank() || existingAddresses.any {
+            it.tag == addressTag.value
+        }
+        addressValidationError.value = address.value.isBlank() || existingAddresses.any {
+            it.address == address.value && it.city == city.value && it.country == country.value
+                    && it.province == province.value && it.postalCode == postalCode.value
+        }
         cityValidationError.value = city.value.isBlank()
         provinceValidationError.value = province.value.isBlank()
         countryValidationError.value = country.value.isBlank()
@@ -114,7 +123,7 @@ fun AddSavedAddressScreen(
         }
     }
 
-    Scaffold (
+    Scaffold(
         topBar = {
             TopAppBar(
                 backgroundColor = Color.Unspecified,
@@ -147,9 +156,9 @@ fun AddSavedAddressScreen(
             }
         },
     ) {
-        LazyColumn (
+        LazyColumn(
             modifier = Modifier.padding(it)
-        ){
+        ) {
             item {
                 CustomIconTextField(
                     fieldValue = addressTag,
@@ -159,7 +168,7 @@ fun AddSavedAddressScreen(
                     validationErrorText = "Please provide a unique tag to remember this address by e.g., home, school, work etc.",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 )
                 CustomIconTextField(
                     fieldValue = address,
@@ -173,18 +182,18 @@ fun AddSavedAddressScreen(
                     validationErrorText = "Please provide an address in order to proceed",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 )
             }
             items(locationResults) { prediction ->
-                Column (
+                Column(
                     modifier = Modifier
                         .padding(horizontal = 15.dp, vertical = 10.dp)
                         .fillMaxWidth()
                         .clickable {
                             locationViewModel.fetchPlaceDetails(prediction.placeId, context)
                         }
-                ){
+                ) {
                     Text(
                         text = "${prediction.getPrimaryText(null)}",
                         style = MaterialTheme.typography.bodyMedium.copy(
@@ -236,7 +245,7 @@ fun AddSavedAddressScreen(
                     validationErrorText = "Please provide a country in order to proceed",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 )
                 CustomIconTextField(
                     fieldValue = postalCode,
@@ -245,23 +254,102 @@ fun AddSavedAddressScreen(
                     hasInputValidation = false,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 )
-                MaxWidthButton(
-                    buttonText = "Add New Address",
-                    buttonAction = { },
-                    backgroundColor = colorResource(id = R.color.turboBlue),
-                    customTextColor = colorResource(id = R.color.fadedGray),
-                    customImageName = R.drawable.add_address_filled,
-                    customImageColor = colorResource(id = R.color.fadedGray),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 15.dp, vertical = 20.dp)
-                        .background(
-                            color = colorResource(id = R.color.turboBlue),
-                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                when {
+                    loadingProfile -> {
+                        FullWidthLottieAnimWithText(
+                            lottieResource = R.raw.loading,
+                            loadingAnimationText = "Uploading new address to your profile on file. Please wait...",
                         )
-                )
+                    }
+
+                    !error.isNullOrBlank() -> {
+                        MaxWidthButton(
+                            buttonText = "Retry Address Upload",
+                            buttonAction = {
+                                if (!validate()) {
+                                    val newAddress = SavedAddress(
+                                        tag = addressTag.value,
+                                        coordinates = PlaceCoordinates(
+                                            longitude = longitude.doubleValue,
+                                            latitude = latitude.doubleValue
+                                        ),
+                                        address = address.value,
+                                        city = city.value,
+                                        province = province.value,
+                                        country = country.value,
+                                        postalCode = postalCode.value
+                                    )
+                                    customerProfileViewModel.addAddress(newAddress = newAddress)
+                                        .also {
+                                            Toast.makeText(
+                                                context,
+                                                "New Address Added",
+                                                Toast.LENGTH_LONG
+                                            )
+                                                .show()
+                                            onClickBackArrow()
+                                        }
+                                }
+                            },
+                            backgroundColor = colorResource(id = R.color.turboBlue),
+                            customTextColor = colorResource(id = R.color.fadedGray),
+                            customImageName = R.drawable.add_address_filled,
+                            customImageColor = colorResource(id = R.color.fadedGray),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 15.dp, vertical = 20.dp)
+                                .background(
+                                    color = colorResource(id = R.color.turboBlue),
+                                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                                )
+                        )
+                    }
+
+                    else -> {
+                        MaxWidthButton(
+                            buttonText = "Add New Address",
+                            buttonAction = {
+                                if (!validate()) {
+                                    val newAddress = SavedAddress(
+                                        tag = addressTag.value,
+                                        coordinates = PlaceCoordinates(
+                                            longitude = longitude.doubleValue,
+                                            latitude = latitude.doubleValue
+                                        ),
+                                        address = address.value,
+                                        city = city.value,
+                                        province = province.value,
+                                        country = country.value,
+                                        postalCode = postalCode.value
+                                    )
+                                    customerProfileViewModel.addAddress(newAddress = newAddress)
+                                        .also {
+                                            Toast.makeText(
+                                                context,
+                                                "New Address Added",
+                                                Toast.LENGTH_LONG
+                                            )
+                                                .show()
+                                            onClickBackArrow()
+                                        }
+                                }
+                            },
+                            backgroundColor = colorResource(id = R.color.turboBlue),
+                            customTextColor = colorResource(id = R.color.fadedGray),
+                            customImageName = R.drawable.add_address_filled,
+                            customImageColor = colorResource(id = R.color.fadedGray),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 15.dp, vertical = 20.dp)
+                                .background(
+                                    color = colorResource(id = R.color.turboBlue),
+                                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                                )
+                        )
+                    }
+                }
             }
         }
     }

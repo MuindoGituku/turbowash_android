@@ -6,6 +6,7 @@
 package com.ed.turbowash_android.screens.profilemanagement.profileupdates.savedaddresses
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
+import com.ed.turbowash_android.customwidgets.ErrorAnimatedScreenWithTryAgain
+import com.ed.turbowash_android.customwidgets.FullScreenLottieAnimWithText
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.models.SavedAddress
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
@@ -45,11 +49,35 @@ fun ViewSavedAddressesScreen(
     onClickUpdateSelectedAddress: (SavedAddress) -> Unit,
 ) {
     val loadingProfile = customerProfileViewModel.loading.collectAsState().value
-    val customer = customerProfileViewModel.customerProfile.collectAsState().value!!
-    val savedAddresses = customer.savedAddresses
+    val customer = customerProfileViewModel.customerProfile.collectAsState().value
     val error = customerProfileViewModel.error.collectAsState().value
 
     Scaffold(
+        bottomBar = {
+            NavigationBar(
+                containerColor = Color.Unspecified,
+            ) {
+                MaxWidthButton(
+                    buttonText = "Add New Address",
+                    buttonAction = { onClickAddNewAddress() },
+                    customTextColor = Color.White,
+                    customImageName = R.drawable.add_address_filled,
+                    customImageColor = colorResource(id = R.color.fadedGray),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                        .background(
+                            color = colorResource(id = R.color.turboBlue),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        )
+                        .border(
+                            2.dp,
+                            color = colorResource(id = R.color.turboBlue),
+                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                        ),
+                )
+            }
+        },
         topBar = {
             TopAppBar(
                 backgroundColor = Color.Unspecified,
@@ -82,37 +110,53 @@ fun ViewSavedAddressesScreen(
             }
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            items(savedAddresses, key = { it.tag }) { address ->
-                Text(
-                    text = address.address,
-                    modifier = Modifier.clickable {
-                        onClickUpdateSelectedAddress (address)
-                    }
+        when {
+            loadingProfile -> {
+                FullScreenLottieAnimWithText(
+                    lottieResource = R.raw.loading,
+                    loadingAnimationText = "Fetching addresses saved under your customer profile. Please wait...",
                 )
             }
-            item {
-                MaxWidthButton(
-                    buttonText = "Add New Address",
-                    buttonAction = { onClickAddNewAddress() },
-                    backgroundColor = colorResource(id = R.color.turboBlue),
-                    customTextColor = colorResource(id = R.color.fadedGray),
-                    customImageName = R.drawable.add_address_filled,
-                    customImageColor = colorResource(id = R.color.fadedGray),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 15.dp, vertical = 20.dp)
-                        .background(
-                            color = colorResource(id = R.color.turboBlue),
-                            shape = RoundedCornerShape(corner = CornerSize(5.dp))
-                        )
+
+            !error.isNullOrBlank() -> {
+                ErrorAnimatedScreenWithTryAgain(
+                    lottieResource = R.raw.doc_error,
+                    errorText = "$error. Click the button below to retry.",
+                    retryAction = { customerProfileViewModel.refreshCustomerProfile() },
+                    retryButtonText = "Try Again"
                 )
+            }
+
+            customer != null -> {
+                if (customer.savedAddresses.isEmpty()) {
+                    FullScreenLottieAnimWithText(
+                        lottieResource = R.raw.empty_list,
+                        loadingAnimationText = "You haven't saved any addresses to your profile. Saved addresses will appear here.",
+                    )
+                } else {
+                    val savedAddresses = customer.savedAddresses
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        items(savedAddresses, key = { it.tag }) { address ->
+                            Text(
+                                text = address.address,
+                                modifier = Modifier.clickable {
+                                    onClickUpdateSelectedAddress (address)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                Text(text = "Something is wrong...")
             }
         }
     }

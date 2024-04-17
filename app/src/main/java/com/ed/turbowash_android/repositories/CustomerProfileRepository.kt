@@ -12,6 +12,7 @@ import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.models.PersonalData
 import com.ed.turbowash_android.models.PlaceCoordinates
 import com.ed.turbowash_android.models.SavedAddress
+import com.ed.turbowash_android.models.SavedVehicle
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
@@ -298,6 +299,70 @@ class CustomerProfileRepository(private val generalDatabaseActionsRepo: GeneralD
                     customerDocRef,
                     "saved_payment_cards",
                     customer.savedPaymentCards
+                )
+            }.await()
+            getCustomerProfile()
+        }
+
+    suspend fun addCustomerVehicle(newVehicle: SavedVehicle): Customer =
+        executeWithExceptionHandling {
+            val user = getCurrentUser()
+
+            val customerDocRef = db.collection("customers").document(user.uid)
+
+            db.runTransaction { transaction ->
+                val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                    ?: throw IllegalStateException("Customer not found")
+
+                customer.savedVehicles.apply {
+                    add(newVehicle)
+                    transaction.update(customerDocRef, "saved_vehicles", this)
+                }
+            }.await()
+            getCustomerProfile()
+        }
+
+    suspend fun updateCustomerVehicle(
+        existingVehicleTag: String,
+        newVehicleDetails: SavedVehicle
+    ): Customer = executeWithExceptionHandling {
+        val user = getCurrentUser()
+
+        val customerDocRef = db.collection("customers").document(user.uid)
+
+        db.runTransaction { transaction ->
+            val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                ?: throw IllegalStateException("Customer not found")
+
+            customer.savedVehicles.indexOfFirst { it.tag == existingVehicleTag }
+                .takeIf { it != -1 }
+                ?.let { index ->
+                    customer.savedVehicles[index] = newVehicleDetails
+                    transaction.update(
+                        customerDocRef,
+                        "saved_vehicles",
+                        customer.savedVehicles
+                    )
+                } ?: throw IllegalStateException("Vehicle not found")
+        }.await()
+        getCustomerProfile()
+    }
+
+    suspend fun deleteCustomerVehicle(selectedVehicleTag: String): Customer =
+        executeWithExceptionHandling {
+            val user = getCurrentUser()
+
+            val customerDocRef = db.collection("customers").document(user.uid)
+
+            db.runTransaction { transaction ->
+                val customer = transaction.get(customerDocRef).toObject(Customer::class.java)
+                    ?: throw IllegalStateException("Customer not found")
+
+                customer.savedVehicles.removeIf { it.tag == selectedVehicleTag }
+                transaction.update(
+                    customerDocRef,
+                    "saved_vehicles",
+                    customer.savedVehicles
                 )
             }.await()
             getCustomerProfile()

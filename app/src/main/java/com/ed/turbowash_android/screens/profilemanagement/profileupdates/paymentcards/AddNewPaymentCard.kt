@@ -5,6 +5,7 @@
 
 package com.ed.turbowash_android.screens.profilemanagement.profileupdates.paymentcards
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -41,8 +42,11 @@ import androidx.navigation.NavController
 import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomIconTextField
 import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
+import com.ed.turbowash_android.customwidgets.FullWidthLottieAnimWithText
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
+import com.ed.turbowash_android.models.PaymentCard
 import com.ed.turbowash_android.viewmodels.CustomerProfileViewModel
+import com.google.firebase.Timestamp
 
 @Composable
 fun AddPaymentCardScreen(
@@ -56,7 +60,6 @@ fun AddPaymentCardScreen(
 
     val configuration = LocalConfiguration.current
     val context = LocalContext.current
-    val focusManager = LocalFocusManager.current
     val screenWidth = configuration.screenWidthDp.dp
     val fieldWidth = (screenWidth) / 2
 
@@ -74,14 +77,27 @@ fun AddPaymentCardScreen(
     fun validate(): Boolean {
         var hasError = false
 
-        if (cardTagValidationError.value || cardNumberValidationError.value || cvvValidationError.value || cardExpiryValidationError.value) {
+        cardTagValidationError.value = cardTag.value.isEmpty() || existingCards.any {
+            it.tag == cardTag.value
+        }
+        cardNameValidationError.value = cardName.value.isEmpty()
+        cardNumberValidationError.value =
+            cardNumber.value.isEmpty() || cardNumber.value.length != 16 || !Regex("^[0-9]+$").matches(
+                cardNumber.value
+            ) || existingCards.any {
+                it.cardNumber == cardNumber.value
+            }
+        cvvValidationError.value =
+            cvv.value.isEmpty() || cvv.value.length != 3 || !Regex("^[0-9]+$").matches(cvv.value)
+
+        if (cardTagValidationError.value || cardNumberValidationError.value || cvvValidationError.value || cardExpiryValidationError.value || cardNameValidationError.value) {
             hasError = true
         }
 
         return hasError
     }
 
-    Scaffold (
+    Scaffold(
         topBar = {
             TopAppBar(
                 backgroundColor = Color.Unspecified,
@@ -114,7 +130,7 @@ fun AddPaymentCardScreen(
             }
         },
     ) { paddingValues ->
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -127,30 +143,30 @@ fun AddPaymentCardScreen(
                 fieldIcon = R.drawable.hash_tag,
                 fieldLabel = "Card Tag",
                 hasValidationError = cardTagValidationError,
-                validationErrorText = "Please provide a unique tag to remember this address by e.g., home, school, work etc.",
+                validationErrorText = "Please provide a unique tag to remember this card by.",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(horizontal = 10.dp),
             )
             CustomIconTextField(
                 fieldValue = cardName,
                 fieldLabel = "Name on Card",
                 fieldIcon = R.drawable.user_circle_thin,
                 hasValidationError = cardNameValidationError,
-                validationErrorText = "Please provide an address in order to proceed",
+                validationErrorText = "Please provide the name registered to this card",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(horizontal = 10.dp),
             )
             CustomIconTextField(
                 fieldValue = cardNumber,
                 fieldLabel = "Card Number",
                 fieldIcon = R.drawable.credit_card_outline,
                 hasValidationError = cardNumberValidationError,
-                validationErrorText = "Please provide an address in order to proceed",
+                validationErrorText = "Card numbers should be 16 digits long and only numeric without any spaces",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(horizontal = 10.dp),
             )
             Row(modifier = Modifier.padding(vertical = 10.dp)) {
                 CustomIconTextField(
@@ -158,7 +174,7 @@ fun AddPaymentCardScreen(
                     fieldLabel = "CVV",
                     fieldIcon = R.drawable.password_three_star,
                     hasValidationError = cvvValidationError,
-                    validationErrorText = "Provide city name",
+                    validationErrorText = "The security number is 3 digits long.",
                     modifier = Modifier
                         .width(fieldWidth)
                         .padding(start = 10.dp, end = 5.dp),
@@ -169,27 +185,85 @@ fun AddPaymentCardScreen(
                     fieldPlaceholder = "MM/YYYY",
                     fieldIcon = R.drawable.calendar_outline,
                     hasValidationError = cardExpiryValidationError,
-                    validationErrorText = "Provide province (or state)",
+                    validationErrorText = "The card cannot be expired!!",
                     modifier = Modifier
                         .width(fieldWidth)
                         .padding(start = 5.dp, end = 10.dp),
                 )
             }
-            MaxWidthButton(
-                buttonText = "Add New Card",
-                buttonAction = { },
-                backgroundColor = colorResource(id = R.color.turboBlue),
-                customTextColor = colorResource(id = R.color.fadedGray),
-                customImageName = R.drawable.add_card_filled,
-                customImageColor = colorResource(id = R.color.fadedGray),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 15.dp, vertical = 20.dp)
-                    .background(
-                        color = colorResource(id = R.color.turboBlue),
-                        shape = RoundedCornerShape(corner = CornerSize(5.dp))
+            when {
+                loadingProfile -> {
+                    FullWidthLottieAnimWithText(
+                        lottieResource = R.raw.loading,
+                        loadingAnimationText = "Uploading new payment card to your profile on file. Please wait...",
                     )
-            )
+                }
+                !error.isNullOrBlank() -> {
+                    MaxWidthButton(
+                        buttonText = "Retry Card Upload",
+                        buttonAction = {
+                            if (!validate()) {
+                                val newCard = PaymentCard(
+                                    tag = cardTag.value,
+                                    nameOnCard = cardName.value,
+                                    cardNumber = cardNumber.value,
+                                    cardCVV = cvv.value,
+                                    cardExpiry = Timestamp.now()
+                                )
+                                customerProfileViewModel.addPaymentCard(newCard = newCard).also {
+                                    Toast.makeText(context, "New Payment card Added", Toast.LENGTH_LONG)
+                                        .show()
+                                    onClickBackArrow()
+                                }
+                            }
+                        },
+                        backgroundColor = colorResource(id = R.color.turboBlue),
+                        customTextColor = colorResource(id = R.color.fadedGray),
+                        customImageName = R.drawable.add_card_filled,
+                        customImageColor = colorResource(id = R.color.fadedGray),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 15.dp, vertical = 20.dp)
+                            .background(
+                                color = colorResource(id = R.color.turboBlue),
+                                shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                            )
+                    )
+                }
+                else -> {
+                    MaxWidthButton(
+                        buttonText = "Add New Card",
+                        buttonAction = {
+                            if (!validate()) {
+                                val newCard = PaymentCard(
+                                    tag = cardTag.value,
+                                    nameOnCard = cardName.value,
+                                    cardNumber = cardNumber.value,
+                                    cardCVV = cvv.value,
+                                    cardExpiry = Timestamp.now()
+                                )
+                                customerProfileViewModel.addPaymentCard(newCard = newCard).also {
+                                    Toast.makeText(context, "New Payment card Added", Toast.LENGTH_LONG)
+                                        .show()
+                                    onClickBackArrow()
+                                }
+                            }
+                        },
+                        backgroundColor = colorResource(id = R.color.turboBlue),
+                        customTextColor = colorResource(id = R.color.fadedGray),
+                        customImageName = R.drawable.add_card_filled,
+                        customImageColor = colorResource(id = R.color.fadedGray),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 15.dp, vertical = 20.dp)
+                            .background(
+                                color = colorResource(id = R.color.turboBlue),
+                                shape = RoundedCornerShape(corner = CornerSize(5.dp))
+                            )
+                    )
+                }
+            }
+
         }
     }
 }

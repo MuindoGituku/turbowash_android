@@ -26,12 +26,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ed.turbowash_android.R
+import com.ed.turbowash_android.customwidgets.CustomVehicleRadioButton
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.models.SavedVehicle
 
 @Composable
-fun WashVehiclePickerSheet (vehiclesList: MutableList<SavedVehicle>, onVehicleConfirmed: (SavedVehicle) -> Unit, onClickAddNewVehicle: () -> Unit) {
-    Column (
+fun WashVehiclePickerSheet(
+    vehiclesList: MutableList<SavedVehicle>,
+    onVehicleConfirmed: (SavedVehicle) -> Unit,
+    onClickAddNewVehicle: () -> Unit,
+    currentSelectedVehicle: SavedVehicle?
+) {
+    Column(
         modifier = Modifier
             .fillMaxHeight(0.9f)
     ) {
@@ -45,7 +51,11 @@ fun WashVehiclePickerSheet (vehiclesList: MutableList<SavedVehicle>, onVehicleCo
         )
         LazyColumn() {
             items(vehiclesList) {
-                Text(text = it.regNo, modifier = Modifier.clickable { onVehicleConfirmed(it) })
+                CustomVehicleRadioButton(
+                    vehicle = it,
+                    onTapVehicle = onVehicleConfirmed,
+                    vehicleSelected = currentSelectedVehicle == it
+                )
             }
         }
         MaxWidthButton(

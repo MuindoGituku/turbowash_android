@@ -45,6 +45,8 @@ import com.ed.turbowash_android.R
 import com.ed.turbowash_android.customwidgets.CustomPaddedIcon
 import com.ed.turbowash_android.customwidgets.MaxWidthButton
 import com.ed.turbowash_android.models.PersonalData
+import java.text.SimpleDateFormat
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
@@ -178,7 +180,7 @@ fun ViewCustomerProfileScreen(
             ) {
                 Text(text = "Date of Birth", style = MaterialTheme.typography.body1)
                 Text(
-                    text = customerPersonalData.phoneNumber.ifEmpty { "(hidden phone number)" },
+                    text = SimpleDateFormat("EEEE, dd MMM YYYY").format(customerPersonalData.dateOfBirth.toDate()),
                     style = MaterialTheme.typography.h6
                 )
             }

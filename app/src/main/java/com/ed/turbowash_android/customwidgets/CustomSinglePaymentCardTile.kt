@@ -51,10 +51,8 @@ import java.util.Locale
 @Composable
 fun CustomSinglePaymentCardTile(
     card: PaymentCard,
-    onTapUpdate: () -> Unit,
-    onTapDelete: () -> Unit,
+    onTapCard: (PaymentCard) -> Unit,
     outerPaddingValues: PaddingValues = PaddingValues(10.dp),
-    innerPaddingValues: PaddingValues = PaddingValues(10.dp)
 ) {
     fun formatTimestamp(timestamp: Timestamp): String {
         val sdf = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
@@ -70,123 +68,87 @@ fun CustomSinglePaymentCardTile(
         }
     }
 
-    val modalBottomSheetState =
-        androidx.compose.material.rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val coroutineScope = rememberCoroutineScope()
-
-    ModalBottomSheetLayout(
-        sheetState = modalBottomSheetState,
-        sheetContent = {
-            BottomSheetContent(
-                onTapDelete = { onTapDelete() },
-                onTapUpdate = { onTapUpdate() }
+    Column(
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(outerPaddingValues)
+            .height(200.dp)
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        colorResource(id = R.color.turboBlue).copy(alpha = 0.5f),
+                        colorResource(id = R.color.turboBlue)
+                    )
+                ),
+                shape = RoundedCornerShape(corner = CornerSize(5.dp))
             )
-        }
+            .clickable {
+                onTapCard(card)
+            }
     ) {
-        Column(
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(outerPaddingValues)
-                .height(200.dp)
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            colorResource(id = R.color.turboBlue).copy(alpha = 0.5f),
-                            colorResource(id = R.color.turboBlue)
-                        )
-                    ),
-                    shape = RoundedCornerShape(corner = CornerSize(5.dp))
-                )
-                .clickable {
-                    coroutineScope.launch { modalBottomSheetState.show() }
-                }
-        ) {
-            Row {
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "TurboWash".uppercase(Locale.ROOT),
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .alpha(0.5f),
-                    style = TextStyle(
-                        fontWeight = FontWeight.Black,
-                        fontSize = 25.sp,
-                        fontStyle = FontStyle.Italic
-                    )
-                )
-            }
+        Row {
+            Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = maskedCardNumber(card.cardNumber), modifier = Modifier.padding(10.dp), style = TextStyle(
+                text = "TurboWash".uppercase(Locale.ROOT),
+                modifier = Modifier
+                    .padding(10.dp)
+                    .alpha(0.5f),
+                style = TextStyle(
                     fontWeight = FontWeight.Black,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 33.sp,
-                    color = colorResource(id = R.color.fadedGray),
-                    letterSpacing = 2.sp
+                    fontSize = 25.sp,
+                    fontStyle = FontStyle.Italic
                 )
             )
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.Bottom,
-                modifier = Modifier.fillMaxWidth()
+        }
+        Text(
+            text = maskedCardNumber(card.cardNumber),
+            modifier = Modifier.padding(10.dp),
+            style = TextStyle(
+                fontWeight = FontWeight.Black,
+                fontFamily = FontFamily.Serif,
+                fontSize = 33.sp,
+                color = colorResource(id = R.color.fadedGray),
+                letterSpacing = 2.sp
+            )
+        )
+        Row(
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(10.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = "Card Holder".uppercase(Locale.ROOT), style = TextStyle(
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 0.3.sp,
-                            color = colorResource(
-                                id = R.color.fadedGray
-                            ).copy(alpha = 0.5f)
-                        ), modifier = Modifier.padding(bottom = 3.dp)
-                    )
-                    Text(text = card.nameOnCard.uppercase(Locale.ROOT))
-                }
-                Column(
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = "Valid Thru".uppercase(Locale.ROOT), style = TextStyle(
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 0.3.sp,
-                            color = colorResource(
-                                id = R.color.fadedGray
-                            ).copy(alpha = 0.5f)
-                        ), modifier = Modifier.padding(bottom = 3.dp)
-                    )
-                    Text(text = formatTimestamp(card.cardExpiry).uppercase(Locale.ROOT))
-                }
+                Text(
+                    text = "Card Holder".uppercase(Locale.ROOT), style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.3.sp,
+                        color = colorResource(
+                            id = R.color.fadedGray
+                        ).copy(alpha = 0.5f)
+                    ), modifier = Modifier.padding(bottom = 3.dp)
+                )
+                Text(text = card.nameOnCard.uppercase(Locale.ROOT))
+            }
+            Column(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                Text(
+                    text = "Valid Thru".uppercase(Locale.ROOT), style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.3.sp,
+                        color = colorResource(
+                            id = R.color.fadedGray
+                        ).copy(alpha = 0.5f)
+                    ), modifier = Modifier.padding(bottom = 3.dp)
+                )
+                Text(text = formatTimestamp(card.cardExpiry).uppercase(Locale.ROOT))
             }
         }
     }
 }
 
-@Composable
-fun BottomSheetContent(onTapUpdate: () -> Unit, onTapDelete: () -> Unit) {
-    Row(modifier = Modifier.padding(16.dp)) {
-        TextButton(
-            onClick = onTapUpdate,
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CustomPaddedIcon(icon = R.drawable.camera_add_filled)
-                Spacer(Modifier.height(8.dp))
-                Text("Open Camera")
-            }
-        }
-        Spacer(Modifier.width(15.dp))
-        TextButton(
-            onClick = onTapDelete,
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CustomPaddedIcon(icon = R.drawable.photo_1_outline)
-                Spacer(Modifier.height(8.dp))
-                Text("Browse Gallery")
-            }
-        }
-    }
-}
